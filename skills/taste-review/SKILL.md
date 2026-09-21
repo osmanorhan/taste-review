@@ -55,7 +55,7 @@ Merge the three lenses through the persona. Keep only findings a staff reviewer 
 ```
 
 Rules:
-- Max 7 items. If more, keep the 7 with the highest blast radius.
+- Max 7 items, each under 40 words. If more, keep the 7 with the highest blast radius.
 - Drop: style, naming, formatting, "consider extracting", anything found only because a number was high, anything the persona says it never comments on.
 - Every item needs a concrete failing case. No case, no item.
 - Slop, heuristics, fallbacks, retries, swallowed errors, monkeypatches nobody asked for: always an item.
