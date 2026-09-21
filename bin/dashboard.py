@@ -34,6 +34,11 @@ class H(SimpleHTTPRequestHandler):
             return self.send_file(HERE.parent / "dashboard" / "index.html", "text/html")
         if self.path == "/api/list":
             return self.send_json(reviews())
+        if self.path.startswith("/api/model/"):
+            repo = self.path[11:]
+            m = TASTE / "model" / f"{repo}.md"
+            log = subprocess.run(["git", "-C", str(TASTE), "log", "--format=%ad %s", "--date=short", "--", f"model/{repo}.md"], capture_output=True, text=True).stdout
+            return self.send_json({"repo": repo, "model": m.read_text() if m.exists() else "", "history": log.splitlines()})
         if self.path.startswith("/files/"):
             p = (TASTE / "reviews" / self.path[7:]).resolve()
             if p.is_file() and TASTE.resolve() in p.parents:

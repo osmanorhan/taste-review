@@ -21,8 +21,10 @@ async function load(){data=await (await fetch('/api/list')).json();
  list.innerHTML=data.map((d,i)=>`<div class="${cur==i?'on':''}" onclick="show(${i})"><span class="s ${d.status}">${d.status}</span><b>${d.repo}#${d.number}</b><br>${d.title||''}<br><span class="v">${d.verdict||''} ${d.blocking?'· '+d.blocking+' block':''} · ${d.author||''}</span></div>`).join('');
  if(cur!==null)render();}
 function show(i){cur=i;load();}
+async function model(repo){const m=await (await fetch('/api/model/'+repo)).json();cur=null;load();
+ main.innerHTML=`<h2>${repo} — mental model</h2><p class=v>${m.history.length} changes: ${m.history.slice(0,5).join(' · ')}</p>${marked.parse(m.model||'_no model yet. First review bootstraps it._')}`;}
 function render(){const d=data[cur];
- main.innerHTML=`<p><a href="${d.url}" target=_blank>${d.url}</a> · <code>${(d.sha||'').slice(0,7)}</code> · ${d.started||''}</p>
+ main.innerHTML=`<p><a href="${d.url}" target=_blank>${d.url}</a> · <a href="#" onclick="model('${d.repo}');return false">mental model</a> · <code>${(d.sha||'').slice(0,7)}</code> · ${d.started||''}</p>
  <p><button class=p onclick="post()" ${d.status!=='done'?'disabled':''}>Approve → post to PR</button><button onclick="rerun()">Re-run</button>
  ${d.excalidraw?`<a href="${d.excalidraw}" download>flow.excalidraw</a>`:''}${d.posted_url?` · posted: <a href="${d.posted_url}" target=_blank>comment</a>`:''}</p>
  ${d.error?`<pre style="color:#b91c1c">${d.error}</pre>`:''}

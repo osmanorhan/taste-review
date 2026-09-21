@@ -5,7 +5,8 @@ TASTE_DIR=${TASTE_DIR:-$HOME/.taste}
 PLUGIN=$(cd "$(dirname "$0")/.." && pwd)
 ref=$1; repo=${ref%#*}; n=${ref#*#}
 out=$TASTE_DIR/reviews/$repo/$n
-mkdir -p "$out" "$TASTE_DIR/repos/$repo" "$TASTE_DIR/logs"
+mkdir -p "$out" "$TASTE_DIR/repos/$repo" "$TASTE_DIR/logs" "$TASTE_DIR/model/${repo%/*}"
+[ -d "$TASTE_DIR/.git" ] || git -C "$TASTE_DIR" init -q
 
 meta=$(gh pr view "$n" --repo "$repo" --json title,headRefOid,baseRefName,author,url) || { echo "gh failed for $ref"; exit 1; }
 sha=$(jq -r .headRefOid <<<"$meta"); base=$(jq -r .baseRefName <<<"$meta")
@@ -25,4 +26,5 @@ rc=$?
 if [ ! -s "$out/review.md" ] || [ "$(jq -r .status "$out/status.json")" = running ]; then
   jq --arg e "claude exit $rc, no review.md" '.status="failed"|.error=$e' "$out/status.json" > "$out/.s" && mv "$out/.s" "$out/status.json"
 fi
+git -C "$TASTE_DIR" add reviews model >/dev/null 2>&1 && git -C "$TASTE_DIR" commit -qm "review: $ref ${sha:0:7}" >/dev/null 2>&1
 jq -r '"\(.repo)#\(.number) \(.status) \(.verdict // "")"' "$out/status.json"

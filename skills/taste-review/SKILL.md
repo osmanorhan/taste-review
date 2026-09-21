@@ -7,6 +7,9 @@ Input: `$ARGUMENTS` = `owner/repo#N`. `TASTE_DIR` defaults to `~/.taste`.
 Working dir is already the PR checkout (`$TASTE_DIR/repos/owner/repo`, branch `pr-N`, base fetched as `origin/<base>`).
 `OUT=$TASTE_DIR/reviews/owner/repo/N`. It exists and holds `status.json`.
 
+## 0. Mental model
+Read `$TASTE_DIR/model/owner/repo.md`. If it does not exist, run `taste-reviewer:model bootstrap owner/repo` first (see that skill). The model is the reviewer's memory of the repo. Every judgment below is made against it: does this PR fit the moving parts, does it change a contract, does it contradict a decision.
+
 ## 1. Persona
 Read `$TASTE_DIR/persona.md`. It defines who is reviewing: name, stance, what they never comment on.
 Every review must carry this persona. Same PR, different persona file = different review.
@@ -39,6 +42,7 @@ Merge the three lenses through the persona. Keep only findings a staff reviewer 
 **Verdict:** ship | fix first | wrong problem
 **Reviewer:** <persona name> — <one-line stance>
 **What moved:** <1-2 plain sentences: which parts changed, which new edges appeared>
+**In the model:** <one sentence: which moving part / contract / decision this PR touches, or "new part: X">
 
 ![flow](flow.png)
 
@@ -74,7 +78,13 @@ cd ${CLAUDE_PLUGIN_ROOT}/skills/excalidraw-diagram/references && uv run python r
 ```
 Read the PNG once. Fix overlaps or clipped text. Render again. Stop after the second render.
 
-## 6. Finish
+## 6. Update the mental model
+Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`): new or changed moving parts, contracts, a Decisions line for this PR if it makes one, Risks if a block item stays open. Do not append a log. Commit:
+```bash
+cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <one line>"
+```
+
+## 7. Finish
 Update `$OUT/status.json`: set `"status":"done"`, `"verdict"`, `"items"` (count), `"blocking"` (count), `"ended"` (ISO now). Keep other fields.
 If anything above made review.md impossible, set `"status":"failed"` and `"error"`.
 Print the verdict line and stop.

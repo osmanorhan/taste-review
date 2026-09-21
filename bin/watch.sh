@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Poll GitHub for PRs where my review is requested. Run a review when head sha is new.
+# Poll GitHub. New head sha on a requested PR -> review. New human comments on a reviewed PR -> learn.
 set -u
 TASTE_DIR=${TASTE_DIR:-$HOME/.taste}
 BIN=$(cd "$(dirname "$0")" && pwd)
 mkdir -p "$TASTE_DIR"
+[ -d "$TASTE_DIR/.git" ] || git -C "$TASTE_DIR" init -q
 mkdir "$TASTE_DIR/lock" 2>/dev/null || { echo "another watch is running"; exit 0; }
 trap 'rmdir "$TASTE_DIR/lock"' EXIT
 
@@ -15,4 +16,14 @@ gh search prs --review-requested=@me --state=open --limit 50 --json repository,n
   if [ -f "$s" ] && [ "$(jq -r .sha "$s")" = "$sha" ] && [ "$(jq -r .status "$s")" != failed ]; then continue; fi
   echo "$(date -u +%FT%TZ) review $ref @ ${sha:0:7}"
   "$BIN/run.sh" "$ref"
+done
+
+for s in "$TASTE_DIR"/reviews/*/*/*/status.json; do
+  [ -f "$s" ] || continue
+  st=$(jq -r .status "$s"); [ "$st" = done ] || [ "$st" = posted ] || continue
+  repo=$(jq -r .repo "$s"); n=$(jq -r .number "$s")
+  c=$(gh api "repos/$repo/pulls/$n" -q '.comments + .review_comments' 2>/dev/null) || continue
+  [ "$c" -gt "$(jq -r '.learned_comments // 0' "$s")" ] || continue
+  echo "$(date -u +%FT%TZ) learn $repo#$n ($c comments)"
+  "$BIN/learn.sh" "$repo#$n"
 done
