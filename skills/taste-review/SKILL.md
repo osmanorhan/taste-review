@@ -34,7 +34,9 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base>
 ```
 If a script fails, note it in "Not measured" and continue.
 
-## 4. Write `$OUT/review.md`
+## 4. Write two files
+`$OUT/review.md` is for us: understanding, model position, diagram, gaps, what we could not check.
+`$OUT/comment.md` is for the PR: only the verdict line and the Gaps section, same text. Nothing else. The dashboard posts this file as-is.
 You are not hunting bugs. You are building understanding. First write what you understand the change does. Then every place where the code does not match that understanding is a gap. Gaps are the review.
 
 ```

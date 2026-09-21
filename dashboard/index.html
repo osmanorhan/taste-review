@@ -28,6 +28,7 @@ function render(){const d=data[cur];
  <p><button class=p onclick="post()" ${d.status!=='done'?'disabled':''}>Approve → post to PR</button><button onclick="rerun()">Re-run</button>
  ${d.excalidraw?`<a href="${d.excalidraw}" download>flow.excalidraw</a>`:''}${d.posted_url?` · posted: <a href="${d.posted_url}" target=_blank>comment</a>`:''}</p>
  ${d.error?`<pre style="color:#b91c1c">${d.error}</pre>`:''}
+ ${d.comment?`<details><summary>Goes to the PR (comment.md)</summary>${marked.parse(d.comment)}</details>`:''}
  ${marked.parse((d.review||'_no review yet_').replace('![flow](flow.png)',d.png?`![flow](${d.png})`:''))}`;}
 async function post(){const d=data[cur];const r=await (await fetch('/api/approve',{method:'POST',body:JSON.stringify({repo:d.repo,number:d.number})})).json();alert(r.ok?'posted '+r.url:r.err);load();}
 async function rerun(){const d=data[cur];await fetch('/api/rerun',{method:'POST',body:JSON.stringify({repo:d.repo,number:d.number})});load();}

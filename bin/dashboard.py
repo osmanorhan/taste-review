@@ -14,6 +14,8 @@ def reviews():
         d = json.loads(s.read_text())
         r = s.parent / "review.md"
         d["review"] = r.read_text() if r.exists() else ""
+        c = s.parent / "comment.md"
+        d["comment"] = c.read_text() if c.exists() else ""
         base = f"/files/{d['repo']}/{d['number']}"
         d["png"] = f"{base}/flow.png" if (s.parent / "flow.png").exists() else ""
         d["excalidraw"] = f"{base}/flow.excalidraw" if (s.parent / "flow.excalidraw").exists() else ""
@@ -49,9 +51,10 @@ class H(SimpleHTTPRequestHandler):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         repo, n = body["repo"], body["number"]
         if self.path == "/api/approve":
-            r = TASTE / "reviews" / repo / str(n) / "review.md"
-            text = "\n".join(l for l in r.read_text().splitlines() if not l.startswith("![flow]"))
-            p = subprocess.run(["gh", "pr", "comment", str(n), "--repo", repo, "--body", text], capture_output=True, text=True)
+            c = TASTE / "reviews" / repo / str(n) / "comment.md"
+            if not c.exists():
+                return self.send_json({"ok": False, "err": "no comment.md"}, 500)
+            p = subprocess.run(["gh", "pr", "comment", str(n), "--repo", repo, "--body-file", str(c)], capture_output=True, text=True)
             if p.returncode:
                 return self.send_json({"ok": False, "err": p.stderr}, 500)
             set_status(repo, n, status="posted", posted_url=p.stdout.strip())
