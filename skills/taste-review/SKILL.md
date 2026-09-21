@@ -34,43 +34,48 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base>
 ```
 If a script fails, note it in "Not measured" and continue.
 
-## 4. Synthesize → `$OUT/review.md`
-Merge the three lenses through the persona. Keep only findings a staff reviewer would block or ask about.
+## 4. Write `$OUT/review.md`
+You are not hunting bugs. You are building understanding. First write what you understand the change does. Then every place where the code does not match that understanding is a gap. Gaps are the review.
 
 ```
 # owner/repo#N — <title>
-**Verdict:** ship | fix first | wrong problem
-**Reviewer:** <persona name> — <one-line stance>
-**What moved:** <1-2 plain sentences: which parts changed, which new edges appeared>
-**In the model:** <one sentence: which moving part / contract / decision this PR touches, or "new part: X">
+Verdict: ship | fix first | wrong problem
+Reviewer: <persona name>
+
+## What this change does
+<3-6 short lines. Plain English, like explaining to a smart friend who is not a native speaker.
+Name things the way a person talks: "the update method in CampaignController", "the summarize function in the CI script".
+Never write file paths or line numbers here.>
+
+## Where it sits
+<1-2 lines: which moving part or contract in the mental model this touches, or "new part: X".>
 
 ![flow](flow.png)
 
-## Items
-- `file:line` — <what is wrong> — <why, one sentence>. **block**
-- `file:line` — <what> — <why>. **ask**
+## Gaps
+1. <What I expected> but <what the code does>. <One line: why this matters or what I need to know.>
+2. ...
 
-## Schema / architecture change          (only when present)
-- <what changed> — <who else reads it> — <what breaks if they disagree>
-
-## Metrics                               (only CRAP > 30 or CCN over threshold, exactly as printed)
-## Not measured
-- <script or check that could not run, and what would settle it>
+## I could not check
+- <one line each, only if it changes the verdict>
 ```
 
-Rules:
-- Max 7 items, each under 40 words. If more, keep the 7 with the highest blast radius.
-- Drop: style, naming, formatting, "consider extracting", anything found only because a number was high, anything the persona says it never comments on.
-- Every item needs a concrete failing case. No case, no item.
-- Slop, heuristics, fallbacks, retries, swallowed errors, monkeypatches nobody asked for: always an item.
-- Missing test for a new branch or new contract: an item. Missing test for a rename: not an item.
-- Plain short sentences. Reader's English is a second language.
+Rules for gaps:
+- A gap is a question or a mismatch, written as a person would say it out loud. Example: "The update method retries three times. A bad input fails the same way three times. What is the retry for?"
+- Say the class and method by name in words. No `file:line`, no code blocks, no backticks around whole paths.
+- One gap = max three short sentences. Max 7 gaps. Drop the weakest first.
+- Say "blocks" at the end of a gap only when the change should not merge with it open.
+- Drop: style, naming, formatting, "consider extracting", anything the persona never comments on, anything found only because a number was high.
+- A number from the scripts goes inside a gap as words ("the summarize function has 14 branches and no test") only when it explains the gap. Never a separate metrics section.
+- Slop, heuristics, fallbacks, retries, swallowed errors, monkeypatches nobody asked for: a gap, because they hide a why.
+- A new branch or new contract with no test: a gap. A rename with no test: not a gap.
+- No praise, no filler, no summary at the end.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).
 One diagram: **what moved**. Components the PR touched, new edges, removed edges, external readers of any changed contract.
 - Touched components: Start/Trigger colors. New edges: Primary. Removed: Warning, dashed. Untouched neighbors that still read the contract: Inactive, dashed.
-- Items from section 4 that are **block**: a small Error-colored dot next to the component, with the item number as label.
+- Gaps that block: a small Error-colored dot next to the component, with the gap number as label.
 - 6 to 15 elements with text. No more. Free-floating text over boxes.
 Render:
 ```bash
@@ -85,6 +90,6 @@ cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <o
 ```
 
 ## 7. Finish
-Update `$OUT/status.json`: set `"status":"done"`, `"verdict"`, `"items"` (count), `"blocking"` (count), `"ended"` (ISO now). Keep other fields.
+Update `$OUT/status.json`: set `"status":"done"`, `"verdict"`, `"gaps"` (count), `"blocking"` (count of gaps marked blocks), `"ended"` (ISO now). Keep other fields.
 If anything above made review.md impossible, set `"status":"failed"` and `"error"`.
 Print the verdict line and stop.

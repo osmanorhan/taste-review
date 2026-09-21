@@ -18,7 +18,7 @@ code{background:#f1f5f9;padding:1px 4px;border-radius:3px}
 <script>
 let data=[],cur=null;
 async function load(){data=await (await fetch('/api/list')).json();
- list.innerHTML=data.map((d,i)=>`<div class="${cur==i?'on':''}" onclick="show(${i})"><span class="s ${d.status}">${d.status}</span><b>${d.repo}#${d.number}</b><br>${d.title||''}<br><span class="v">${d.verdict||''} ${d.blocking?'· '+d.blocking+' block':''} · ${d.author||''}</span></div>`).join('');
+ list.innerHTML=data.map((d,i)=>`<div class="${cur==i?'on':''}" onclick="show(${i})"><span class="s ${d.status}">${d.status}</span><b>${d.repo}#${d.number}</b><br>${d.title||''}<br><span class="v">${d.verdict||''} ${d.gaps!=null?'· '+d.gaps+' gaps':''}${d.blocking?' · '+d.blocking+' block':''} · ${d.author||''}</span></div>`).join('');
  if(cur!==null)render();}
 function show(i){cur=i;load();}
 async function model(repo){const m=await (await fetch('/api/model/'+repo)).json();cur=null;load();
