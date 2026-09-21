@@ -12,7 +12,7 @@ Read `$TASTE_DIR/model/owner/repo.md`. If it does not exist, run `taste-reviewer
 
 ## 1. Persona
 Read `$TASTE_DIR/persona.md`. It defines who is reviewing: name, stance, what they never comment on.
-Every review must carry this persona. Same PR, different persona file = different review.
+The persona steers judgment. It is never written into the output. No name, no stance line, no self-description.
 
 ## 2. Facts
 ```bash
@@ -42,7 +42,6 @@ You are not hunting bugs. You are building understanding. First write what you u
 ```
 # owner/repo#N — <title>
 Verdict: ship | fix first | wrong problem
-Reviewer: <persona name>
 
 ## What this change does
 <3-6 short lines. Plain English, like explaining to a smart friend who is not a native speaker.
