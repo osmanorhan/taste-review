@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>com.taste.daily</string>
+<key>ProgramArguments</key><array><string>/Users/osman.orhan/work/taste-reviewer/bin/watch.sh</string></array>
+<key>StartCalendarInterval</key><dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer></dict>
+<key>StandardOutPath</key><string>/Users/osman.orhan/.taste/logs/daily.log</string>
+<key>StandardErrorPath</key><string>/Users/osman.orhan/.taste/logs/daily.log</string>
+<key>EnvironmentVariables</key><dict><key>PATH</key><string>/Users/osman.orhan/.local/bin:/opt/homebrew/bin:/usr/bin:/bin</string></dict>
+</dict></plist>

@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8"><title>taste</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+body{font:14px/1.4 -apple-system,system-ui,sans-serif;margin:0;display:grid;grid-template-columns:340px 1fr;height:100vh;color:#1f2937}
+aside{border-right:1px solid #e5e7eb;overflow:auto}
+aside div{padding:10px 14px;border-bottom:1px solid #f1f5f9;cursor:pointer}
+aside div.on{background:#eff6ff}
+.s{font-size:11px;padding:1px 6px;border-radius:9px;color:#fff;margin-right:6px}
+.running{background:#f59e0b}.queued{background:#94a3b8}.done{background:#3b82f6}.posted{background:#10b981}.failed{background:#ef4444}
+.v{font-size:11px;color:#64748b}
+main{overflow:auto;padding:20px 32px}
+main img{max-width:100%;border:1px solid #e5e7eb;border-radius:6px}
+button{padding:6px 12px;margin-right:8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer}
+button.p{background:#10b981;color:#fff;border-color:#10b981}
+code{background:#f1f5f9;padding:1px 4px;border-radius:3px}
+</style>
+<aside id="list"></aside><main id="main">Pick a PR.</main>
+<script>
+let data=[],cur=null;
+async function load(){data=await (await fetch('/api/list')).json();
+ list.innerHTML=data.map((d,i)=>`<div class="${cur==i?'on':''}" onclick="show(${i})"><span class="s ${d.status}">${d.status}</span><b>${d.repo}#${d.number}</b><br>${d.title||''}<br><span class="v">${d.verdict||''} ${d.blocking?'· '+d.blocking+' block':''} · ${d.author||''}</span></div>`).join('');
+ if(cur!==null)render();}
+function show(i){cur=i;load();}
+function render(){const d=data[cur];
+ main.innerHTML=`<p><a href="${d.url}" target=_blank>${d.url}</a> · <code>${(d.sha||'').slice(0,7)}</code> · ${d.started||''}</p>
+ <p><button class=p onclick="post()" ${d.status!=='done'?'disabled':''}>Approve → post to PR</button><button onclick="rerun()">Re-run</button>
+ ${d.excalidraw?`<a href="${d.excalidraw}" download>flow.excalidraw</a>`:''}${d.posted_url?` · posted: <a href="${d.posted_url}" target=_blank>comment</a>`:''}</p>
+ ${d.error?`<pre style="color:#b91c1c">${d.error}</pre>`:''}
+ ${marked.parse((d.review||'_no review yet_').replace('![flow](flow.png)',d.png?`![flow](${d.png})`:''))}`;}
+async function post(){const d=data[cur];const r=await (await fetch('/api/approve',{method:'POST',body:JSON.stringify({repo:d.repo,number:d.number})})).json();alert(r.ok?'posted '+r.url:r.err);load();}
+async function rerun(){const d=data[cur];await fetch('/api/rerun',{method:'POST',body:JSON.stringify({repo:d.repo,number:d.number})});load();}
+load();setInterval(load,15000);
+</script>

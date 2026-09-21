@@ -1,0 +1,6 @@
+{
+  "name": "taste-reviewer",
+  "version": "0.1.0",
+  "description": "Async staff-level taste review for PRs assigned to you. Moving parts, complexity, slop, schema changes. Short items, colorful excalidraw diagrams, local dashboard.",
+  "author": { "name": "Osman Orhan" }
+}
