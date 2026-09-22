@@ -51,53 +51,68 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base>
 If a script fails, note it in "Not measured" and continue.
 
 ## 4. Write two files
-`$OUT/review.md` is for us. `$OUT/comment.md` is for the PR: the verdict word and the numbered gaps, copied word for word. Nothing else.
+`$OUT/review.md` is for us. `$OUT/comment.md` is for the PR: the state word and the numbered questions, word for word. Nothing else.
 
-You are not hunting bugs. You are building understanding. Write what you understand. Every place the code does not match it is a gap. Gaps are the review.
+You are the reviewer's stand-in, not a text machine. You do not file findings. You ask what the reviewer would ask.
 
-**No headings. No sections. No chapters.** A review is a title, a verdict, a short paragraph, a picture, a numbered list. That is all. A traditional code review with six headings is the thing we are replacing.
+Work in this order. Write what you understand the change does. Where the code does not match that understanding, you have a mental gap. A mental gap becomes **a question to the author**, not an item in a list.
+
+**No headings. No sections. No "Gaps".** A review is a title, a state word, a short paragraph, a picture, numbered questions. Nothing else.
+
+### What you guard
+Conceptual integrity. Only that.
+- Does this fit the moving parts in the mental model, or does it bend them?
+- Is there now a second source of truth for one fact?
+- Two things that must agree but can drift apart?
+- Is the complexity paid for? A big machine for a small need is a question.
+- Slop: a fallback, a retry, a heuristic, a swallowed error, a default nobody asked for. Each one hides a why. Always ask.
+- Verbose or duplicated code that adds a name but no meaning.
+
+**Never ask about procedure.** No ticket keys, no code owners, no PR scope, no commit hygiene, no schedules, no naming, no style, no "open a ticket for this". That is noise. Drop it even when it is true.
+
+### The state word
+It must agree with the questions. You cannot say ship and then ask five things.
+- `clear` — you understand it. No open question. Only this word means ship.
+- `needs answers` — you have questions. Say how many.
+- `wrong problem` — the change solves something other than the real need.
 
 `review.md` looks exactly like this:
 
 ```
 # owner/repo#N — <title>
-ship | fix first | wrong problem
+needs answers (3)
 
 <4-8 sentences. Max 12 words each. What the change does, in plain words.
-One of these sentences says where it sits in the mental model.
+One sentence says where it sits in the mental model.
 No file paths, no line numbers.>
 
 ![flow](flow.png)
 
-1. <The mismatch. Max 12 words.> <The case where it hurts. Max 12 words.> [blocks]
+1. <A real question, ending in "?". Max 12 words.> <What made you ask. Max 12 words.>
 2. ...
 
-Not checked: <one line, only when it could change the verdict.>
+Not checked: <one line, only when it could change the state word.>
 ```
 
-`comment.md` is the verdict word, a blank line, then the numbered list. Nothing else.
+`comment.md` is the state word, a blank line, then the numbered questions. Nothing else.
 
-Rules for gaps:
-- A gap is a mismatch between what you understood and what the code does. Say it out loud like a person.
-- **Two sentences. Hard limit.** First: the mismatch. Second: the case where it hurts. Need a third? It is two gaps, or you do not understand it yet.
-- 24 words per gap, total. Obey the sentence rule above.
+Rules for questions:
+- It is a question. It ends with a question mark. "Why is X here?" "What happens when Y?"
+- **Two sentences.** The question, then the thing that made you ask. 24 words total.
+- Never phrase a question as an order. Not "split this method". Ask why it is one method.
 - Name the class, method or script in words. No file paths, no line numbers, no code blocks.
-- Max 7 gaps. Drop the weakest first.
-- Add `[blocks]` at the end only when the change should not merge with this open.
-- Drop: style, naming, formatting, "consider extracting", anything the persona never comments on, anything found only because a number was high.
-- A number goes inside a gap as words, only when it explains the gap.
-- Fallbacks, retries, heuristics, swallowed errors, monkeypatches nobody asked for: a gap. They hide a why.
-- A new branch or new contract with no test: a gap. A rename with no test: not a gap.
-- Something you checked and cleared is not a gap. It is not in the review either. If it changed a belief, it goes in the mental model.
+- Max 5 questions. Five is already a lot for one person to answer. Drop the weakest.
+- A number goes inside a question as words, only when it is why you are asking.
+- Something you checked and understood is not a question. It does not appear. If it changed a belief, it goes in the mental model.
 - No praise, no filler, no closing summary.
 
-**Before you save either file:** read every sentence. Over 12 words: split it. A comma holding two ideas: split it. A heading that is not the title line: delete it.
+**Before you save either file:** read every sentence. Over 12 words: split it. Not a question: make it one or cut it. Procedural: cut it. A heading that is not the title line: delete it.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).
 One diagram: **what moved**. Components the PR touched, new edges, removed edges, external readers of any changed contract.
 - Touched components: Start/Trigger colors. New edges: Primary. Removed: Warning, dashed. Untouched neighbors that still read the contract: Inactive, dashed.
-- Gaps marked [blocks]: a small Error-colored dot next to the component, with the gap number as label.
+- A component a question is about: a small Error-colored dot next to it, labeled with the question number.
 - 6 to 15 elements with text. No more. Free-floating text over boxes.
 Render:
 ```bash
@@ -112,6 +127,6 @@ cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <o
 ```
 
 ## 7. Finish
-Update `$OUT/status.json`: set `"status":"done"`, `"verdict"`, `"gaps"` (count), `"blocking"` (count of gaps marked blocks), `"ended"` (ISO now). Keep other fields.
+Update `$OUT/status.json`: set `"status":"done"`, `"verdict"` (the state word), `"state"` (clear|needs answers|wrong problem), `"questions"` (count), `"ended"` (ISO now). Keep other fields.
 If anything above made review.md impossible, set `"status":"failed"` and `"error"`.
-Print the verdict line and stop.
+Print the state word and the question count, then stop.
