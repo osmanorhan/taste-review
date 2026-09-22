@@ -32,4 +32,4 @@ if [ ! -s "$out/review.md" ] || [ "$(jq -r .status "$out/status.json")" = runnin
   jq --arg e "claude exit $rc, no review.md" '.status="failed"|.error=$e' "$out/status.json" > "$out/.s" && mv "$out/.s" "$out/status.json"
 fi
 git -C "$TASTE_DIR" add reviews model >/dev/null 2>&1 && git -C "$TASTE_DIR" commit -qm "review: $ref ${sha:0:7}" >/dev/null 2>&1
-jq -r '"\(.repo)#\(.number) \(.status) \(.verdict // "")"' "$out/status.json"
+jq -r '"\(.repo)#\(.number) \(.status) \(.questions // 0) questions"' "$out/status.json"

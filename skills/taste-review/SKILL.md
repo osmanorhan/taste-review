@@ -51,13 +51,13 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base>
 If a script fails, note it in "Not measured" and continue.
 
 ## 4. Write two files
-`$OUT/review.md` is for us. `$OUT/comment.md` is for the PR: the state word and the numbered questions, word for word. Nothing else.
+`$OUT/review.md` is for us. `$OUT/comment.md` is for the PR: the numbered questions, word for word. Nothing else.
 
 You are the reviewer's stand-in, not a text machine. You do not file findings. You ask what the reviewer would ask.
 
 Work in this order. Write what you understand the change does. Where the code does not match that understanding, you have a mental gap. A mental gap becomes **a question to the author**, not an item in a list.
 
-**No headings. No sections. No "Gaps".** A review is a title, a state word, a short paragraph, a picture, numbered questions. Nothing else.
+**No headings. No sections. No "Gaps".** A review is a title, a short paragraph, a picture, numbered questions. Nothing else.
 
 ### What you guard
 Conceptual integrity. Only that.
@@ -70,17 +70,16 @@ Conceptual integrity. Only that.
 
 **Never ask about procedure.** No ticket keys, no code owners, no PR scope, no commit hygiene, no schedules, no naming, no style, no "open a ticket for this". That is noise. Drop it even when it is true.
 
-### The state word
-It must agree with the questions. You cannot say ship and then ask five things.
-- `clear` — you understand it. No open question. Only this word means ship.
-- `needs answers` — you have questions. Say how many.
-- `wrong problem` — the change solves something other than the real need.
+### No verdict
+You never say ship, approve, or block. That is a merge decision. It belongs to the person reading your questions, not to you.
+You report one thing only: what you understand and what you still have to ask. Nothing can contradict, because there is only one thing.
+If the change solves the wrong need, that is not a verdict. That is your first question: "Why do we solve X here when the need is Y?"
+If you understand everything, write "Nothing to ask." and stop.
 
 `review.md` looks exactly like this:
 
 ```
 # owner/repo#N — <title>
-needs answers (3)
 
 <4-8 sentences. Max 12 words each. What the change does, in plain words.
 One sentence says where it sits in the mental model.
@@ -91,10 +90,10 @@ No file paths, no line numbers.>
 1. <A real question, ending in "?". Max 12 words.> <What made you ask. Max 12 words.>
 2. ...
 
-Not checked: <one line, only when it could change the state word.>
+Not checked: <one line, only when it would change a question.>
 ```
 
-`comment.md` is the state word, a blank line, then the numbered questions. Nothing else.
+`comment.md` is the numbered questions. Nothing else. No verdict line, no intro, no sign-off.
 
 Rules for questions:
 - It is a question. It ends with a question mark. "Why is X here?" "What happens when Y?"
@@ -127,6 +126,6 @@ cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <o
 ```
 
 ## 7. Finish
-Update `$OUT/status.json`: set `"status":"done"`, `"verdict"` (the state word), `"state"` (clear|needs answers|wrong problem), `"questions"` (count), `"ended"` (ISO now). Keep other fields.
+Update `$OUT/status.json`: set `"status":"done"`, `"questions"` (count), `"ended"` (ISO now). Keep other fields.
 If anything above made review.md impossible, set `"status":"failed"` and `"error"`.
-Print the state word and the question count, then stop.
+Print the question count, then stop.
