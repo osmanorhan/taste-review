@@ -51,57 +51,53 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base>
 If a script fails, note it in "Not measured" and continue.
 
 ## 4. Write two files
-`$OUT/review.md` is for us: understanding, model position, diagram, gaps, what we could not check.
-`$OUT/comment.md` is for the PR: the verdict line and the Gaps section, copied word for word from review.md. Nothing else — no understanding, no model, no diagram, no 'checked, not a gap'. The dashboard posts this file as-is.
-You are not hunting bugs. You are building understanding. First write what you understand the change does. Then every place where the code does not match that understanding is a gap. Gaps are the review.
+`$OUT/review.md` is for us. `$OUT/comment.md` is for the PR: the verdict word and the numbered gaps, copied word for word. Nothing else.
+
+You are not hunting bugs. You are building understanding. Write what you understand. Every place the code does not match it is a gap. Gaps are the review.
+
+**No headings. No sections. No chapters.** A review is a title, a verdict, a short paragraph, a picture, a numbered list. That is all. A traditional code review with six headings is the thing we are replacing.
+
+`review.md` looks exactly like this:
 
 ```
 # owner/repo#N — <title>
-Verdict: ship | fix first | wrong problem
+ship | fix first | wrong problem
 
-## What this change does
-<4-8 sentences. Each one max 12 words. One idea each.
-Name things the way a person talks: "the update method in CampaignController".
+<4-8 sentences. Max 12 words each. What the change does, in plain words.
+One of these sentences says where it sits in the mental model.
 No file paths, no line numbers.>
-
-## Where it sits
-<1-2 lines: which moving part or contract in the mental model this touches, or "new part: X".>
 
 ![flow](flow.png)
 
-## Gaps
 1. <The mismatch. Max 12 words.> <The case where it hurts. Max 12 words.> [blocks]
 2. ...
 
-## I could not check
-- <one line each, only if it changes the verdict>
-
-## Checked, not a gap
-- <thing that looked wrong and is not> — <why it is fine>
-(this section stays out of comment.md)
+Not checked: <one line, only when it could change the verdict.>
 ```
 
+`comment.md` is the verdict word, a blank line, then the numbered list. Nothing else.
+
 Rules for gaps:
-- A gap is a mismatch between what you understood and what the code does. Say it the way a person says it out loud.
+- A gap is a mismatch between what you understood and what the code does. Say it out loud like a person.
 - **Two sentences. Hard limit.** First: the mismatch. Second: the case where it hurts. Need a third? It is two gaps, or you do not understand it yet.
 - 24 words per gap, total. Obey the sentence rule above.
 - Name the class, method or script in words. No file paths, no line numbers, no code blocks.
 - Max 7 gaps. Drop the weakest first.
 - Add `[blocks]` at the end only when the change should not merge with this open.
 - Drop: style, naming, formatting, "consider extracting", anything the persona never comments on, anything found only because a number was high.
-- A number goes inside a gap as words, only when it explains the gap. Never a metrics section.
+- A number goes inside a gap as words, only when it explains the gap.
 - Fallbacks, retries, heuristics, swallowed errors, monkeypatches nobody asked for: a gap. They hide a why.
 - A new branch or new contract with no test: a gap. A rename with no test: not a gap.
-- Anything you checked and cleared goes in **Checked, not a gap**, one line. That is where "I looked and it is fine" lives. Never in Gaps.
+- Something you checked and cleared is not a gap. It is not in the review either. If it changed a belief, it goes in the mental model.
 - No praise, no filler, no closing summary.
 
-**Before you save either file:** read every sentence you wrote. Any sentence over 12 words gets split or cut. Any sentence with a comma holding two ideas gets split. Do this pass every time.
+**Before you save either file:** read every sentence. Over 12 words: split it. A comma holding two ideas: split it. A heading that is not the title line: delete it.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).
 One diagram: **what moved**. Components the PR touched, new edges, removed edges, external readers of any changed contract.
 - Touched components: Start/Trigger colors. New edges: Primary. Removed: Warning, dashed. Untouched neighbors that still read the contract: Inactive, dashed.
-- Gaps that block: a small Error-colored dot next to the component, with the gap number as label.
+- Gaps marked [blocks]: a small Error-colored dot next to the component, with the gap number as label.
 - 6 to 15 elements with text. No more. Free-floating text over boxes.
 Render:
 ```bash
