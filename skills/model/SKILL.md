@@ -5,6 +5,22 @@ description: The mental model of one repo. One file, rewritten in place, never v
 
 `TASTE_DIR` defaults to `~/.taste`. Model file: `$TASTE_DIR/model/owner/repo.md`. Checkout: `$TASTE_DIR/repos/owner/repo`.
 
+## Sentence rule (applies to every word this skill writes)
+The reader has ADHD. English is their second language. A long sentence is not read, it is skipped.
+
+- **Max 12 words per sentence.** Count them.
+- One idea per sentence. If a sentence has two ideas, make two sentences.
+- No clause joining: no "which", "that used to", "plus", "while", "so that", no semicolons, no dashes holding a second thought.
+- No participle chains ("rewritten as ... , buried inside ...").
+- Plain words. "runs" not "is executed". "now" not "as of this change".
+- Never pack a number and an explanation into one sentence. Split them.
+
+Bad:
+> Fifty wire checks that used to run against staging from the automation repo are rewritten as Java test classes inside this service, plus about ninety more that were buried inside the staging flows.
+
+Good:
+> Fifty wire checks used to run on staging. They lived in the automation repo. Now they are Java tests in this service. Ninety more came out of the staging flows.
+
 ## The one rule
 There is exactly one mental model per repo. You edit that file. You never create a second file, a dated copy, a "v2", a summary, or a per-PR model. History lives in git (`$TASTE_DIR` is a git repo), not in files.
 Rewrite sections, do not append logs. A model is a current belief, not a diary. When a belief changes, replace it and put the reason in **Decisions** with the date and the PR.

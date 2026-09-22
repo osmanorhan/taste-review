@@ -4,8 +4,24 @@ description: Staff-level taste review of one PR. Input "owner/repo#N". Writes re
 ---
 
 Input: `$ARGUMENTS` = `owner/repo#N`. `TASTE_DIR` defaults to `~/.taste`.
-Working dir is already the PR checkout (`$TASTE_DIR/repos/owner/repo`, branch `pr-N`, base fetched as `origin/<base>`).
+Working dir is already the PR checkout (`$TASTE_DIR/repos/owner/repo`, detached at the PR head sha, base as `origin/<base>`).
 `OUT=$TASTE_DIR/reviews/owner/repo/N`. It exists and holds `status.json`.
+
+## Sentence rule (applies to every word this skill writes)
+The reader has ADHD. English is their second language. A long sentence is not read, it is skipped.
+
+- **Max 12 words per sentence.** Count them.
+- One idea per sentence. If a sentence has two ideas, make two sentences.
+- No clause joining: no "which", "that used to", "plus", "while", "so that", no semicolons, no dashes holding a second thought.
+- No participle chains ("rewritten as ... , buried inside ...").
+- Plain words. "runs" not "is executed". "now" not "as of this change".
+- Never pack a number and an explanation into one sentence. Split them.
+
+Bad:
+> Fifty wire checks that used to run against staging from the automation repo are rewritten as Java test classes inside this service, plus about ninety more that were buried inside the staging flows.
+
+Good:
+> Fifty wire checks used to run on staging. They lived in the automation repo. Now they are Java tests in this service. Ninety more came out of the staging flows.
 
 ## 0. Mental model
 Read `$TASTE_DIR/model/owner/repo.md`. If it does not exist, run `taste-reviewer:model bootstrap owner/repo` first (see that skill). The model is the reviewer's memory of the repo. Every judgment below is made against it: does this PR fit the moving parts, does it change a contract, does it contradict a decision.
@@ -44,9 +60,9 @@ You are not hunting bugs. You are building understanding. First write what you u
 Verdict: ship | fix first | wrong problem
 
 ## What this change does
-<3-6 short lines. Plain English, like explaining to a smart friend who is not a native speaker.
-Name things the way a person talks: "the update method in CampaignController", "the summarize function in the CI script".
-Never write file paths or line numbers here.>
+<4-8 sentences. Each one max 12 words. One idea each.
+Name things the way a person talks: "the update method in CampaignController".
+No file paths, no line numbers.>
 
 ## Where it sits
 <1-2 lines: which moving part or contract in the mental model this touches, or "new part: X".>
@@ -54,7 +70,7 @@ Never write file paths or line numbers here.>
 ![flow](flow.png)
 
 ## Gaps
-1. <One sentence: what the code does that does not match the understanding above.> <One sentence: the case where that hurts.> [blocks]
+1. <The mismatch. Max 12 words.> <The case where it hurts. Max 12 words.> [blocks]
 2. ...
 
 ## I could not check
@@ -67,8 +83,8 @@ Never write file paths or line numbers here.>
 
 Rules for gaps:
 - A gap is a mismatch between what you understood and what the code does. Say it the way a person says it out loud.
-- **Two sentences. Hard limit.** First sentence: the mismatch. Second: the case where it hurts. If you need a third, the gap is two gaps or it is not clear enough yet.
-- Under 40 words per gap. Short words. The reader's English is a second language. No semicolons, no dashes joining clauses, no "the exact case the script exists to catch" style flourishes.
+- **Two sentences. Hard limit.** First: the mismatch. Second: the case where it hurts. Need a third? It is two gaps, or you do not understand it yet.
+- 24 words per gap, total. Obey the sentence rule above.
 - Name the class, method or script in words. No file paths, no line numbers, no code blocks.
 - Max 7 gaps. Drop the weakest first.
 - Add `[blocks]` at the end only when the change should not merge with this open.
@@ -78,6 +94,8 @@ Rules for gaps:
 - A new branch or new contract with no test: a gap. A rename with no test: not a gap.
 - Anything you checked and cleared goes in **Checked, not a gap**, one line. That is where "I looked and it is fine" lives. Never in Gaps.
 - No praise, no filler, no closing summary.
+
+**Before you save either file:** read every sentence you wrote. Any sentence over 12 words gets split or cut. Any sentence with a comma holding two ideas gets split. Do this pass every time.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).
