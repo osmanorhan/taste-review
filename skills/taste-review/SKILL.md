@@ -36,7 +36,7 @@ If a script fails, note it in "Not measured" and continue.
 
 ## 4. Write two files
 `$OUT/review.md` is for us: understanding, model position, diagram, gaps, what we could not check.
-`$OUT/comment.md` is for the PR: only the verdict line and the Gaps section, same text. Nothing else. The dashboard posts this file as-is.
+`$OUT/comment.md` is for the PR: the verdict line and the Gaps section, copied word for word from review.md. Nothing else — no understanding, no model, no diagram, no 'checked, not a gap'. The dashboard posts this file as-is.
 You are not hunting bugs. You are building understanding. First write what you understand the change does. Then every place where the code does not match that understanding is a gap. Gaps are the review.
 
 ```
@@ -54,23 +54,30 @@ Never write file paths or line numbers here.>
 ![flow](flow.png)
 
 ## Gaps
-1. <What I expected> but <what the code does>. <One line: why this matters or what I need to know.>
+1. <One sentence: what the code does that does not match the understanding above.> <One sentence: the case where that hurts.> [blocks]
 2. ...
 
 ## I could not check
 - <one line each, only if it changes the verdict>
+
+## Checked, not a gap
+- <thing that looked wrong and is not> — <why it is fine>
+(this section stays out of comment.md)
 ```
 
 Rules for gaps:
-- A gap is a question or a mismatch, written as a person would say it out loud. Example: "The update method retries three times. A bad input fails the same way three times. What is the retry for?"
-- Say the class and method by name in words. No `file:line`, no code blocks, no backticks around whole paths.
-- One gap = max three short sentences. Max 7 gaps. Drop the weakest first.
-- Say "blocks" at the end of a gap only when the change should not merge with it open.
+- A gap is a mismatch between what you understood and what the code does. Say it the way a person says it out loud.
+- **Two sentences. Hard limit.** First sentence: the mismatch. Second: the case where it hurts. If you need a third, the gap is two gaps or it is not clear enough yet.
+- Under 40 words per gap. Short words. The reader's English is a second language. No semicolons, no dashes joining clauses, no "the exact case the script exists to catch" style flourishes.
+- Name the class, method or script in words. No file paths, no line numbers, no code blocks.
+- Max 7 gaps. Drop the weakest first.
+- Add `[blocks]` at the end only when the change should not merge with this open.
 - Drop: style, naming, formatting, "consider extracting", anything the persona never comments on, anything found only because a number was high.
-- A number from the scripts goes inside a gap as words ("the summarize function has 14 branches and no test") only when it explains the gap. Never a separate metrics section.
-- Slop, heuristics, fallbacks, retries, swallowed errors, monkeypatches nobody asked for: a gap, because they hide a why.
+- A number goes inside a gap as words, only when it explains the gap. Never a metrics section.
+- Fallbacks, retries, heuristics, swallowed errors, monkeypatches nobody asked for: a gap. They hide a why.
 - A new branch or new contract with no test: a gap. A rename with no test: not a gap.
-- No praise, no filler, no summary at the end.
+- Anything you checked and cleared goes in **Checked, not a gap**, one line. That is where "I looked and it is fine" lives. Never in Gaps.
+- No praise, no filler, no closing summary.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).

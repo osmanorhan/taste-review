@@ -13,10 +13,15 @@ sha=$(jq -r .headRefOid <<<"$meta"); base=$(jq -r .baseRefName <<<"$meta")
 jq -n --arg repo "$repo" --arg n "$n" --arg sha "$sha" --arg base "$base" --argjson m "$meta" --arg t "$(date -u +%FT%TZ)" \
   '{repo:$repo,number:($n|tonumber),sha:$sha,base:$base,title:$m.title,author:$m.author.login,url:$m.url,status:"running",started:$t}' > "$out/status.json"
 
+fail() { jq --arg e "$1" '.status="failed"|.error=$e' "$out/status.json" > "$out/.s" && mv "$out/.s" "$out/status.json"; echo "$ref failed: $1"; exit 1; }
+
 wd=$TASTE_DIR/repos/$repo
-[ -d "$wd/.git" ] || gh repo clone "$repo" "$wd" -- -q
-git -C "$wd" fetch -q origin "$base" "pull/$n/head:pr-$n" 2>&1 | tail -2
-git -C "$wd" checkout -q -f "pr-$n" && git -C "$wd" reset -q --hard "$sha"
+[ -d "$wd/.git" ] || gh repo clone "$repo" "$wd" -- -q || fail "clone failed"
+git -C "$wd" checkout -q --detach 2>/dev/null
+git -C "$wd" fetch -qf origin "$base:refs/remotes/origin/$base" "pull/$n/head" || fail "fetch failed"
+git -C "$wd" reset -q --hard "$sha" || fail "sha $sha not in checkout"
+git -C "$wd" clean -qfd
+[ "$(git -C "$wd" rev-parse HEAD)" = "$sha" ] || fail "checkout is not at $sha"
 
 cd "$wd" && TASTE_DIR=$TASTE_DIR claude -p "/taste-reviewer:taste-review $ref" \
   --plugin-dir "$PLUGIN" --permission-mode bypassPermissions \
