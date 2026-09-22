@@ -6,6 +6,7 @@ PLUGIN=$(cd "$(dirname "$0")/.." && pwd)
 ref=$1; repo=${ref%#*}; n=${ref#*#}
 out=$TASTE_DIR/reviews/$repo/$n
 mkdir -p "$out" "$TASTE_DIR/repos/$repo" "$TASTE_DIR/logs" "$TASTE_DIR/model/${repo%/*}"
+rm -f "$out/review.md" "$out/comment.md" "$out/flow.excalidraw" "$out/flow.png"
 [ -d "$TASTE_DIR/.git" ] || git -C "$TASTE_DIR" init -q
 
 meta=$(gh pr view "$n" --repo "$repo" --json title,headRefOid,baseRefName,author,url) || { echo "gh failed for $ref"; exit 1; }
