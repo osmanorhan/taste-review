@@ -26,7 +26,7 @@ Good:
 ## 0. Mental model
 Read `$TASTE_DIR/model/owner/repo.md`. If it does not exist, run `taste-reviewer:model bootstrap owner/repo` first (see that skill).
 Then read the format: `cat ${CLAUDE_PLUGIN_ROOT}/skills/model/SKILL.md`. Compare its `##` sections with the model file. If one is missing, fill it now from the code on `origin/<base>`, before you look at the PR.
-For Boundaries, the repo's own convention docs (`.claude/rules/`, `CLAUDE.md`, `CONTRIBUTING`, `docs/adr/`) are a map, not the truth. Keep a convention only when the code confirms it: count how many places follow it. Write the count next to it. The structural pass needs it. Commit it on its own: `model: owner/repo — fill <section>`. The model is the reviewer's memory of the repo. Every judgment below is made against it: does this PR fit the moving parts, does it change a contract, does it contradict a decision.
+For Boundaries, the repo's own convention docs (`.claude/rules/`, `CLAUDE.md`, `CONTRIBUTING`, `docs/adr/`) are a map, not the truth. Keep a convention only when the code confirms it: count how many places follow it. Write the count next to it. Commit it on its own: `model: owner/repo — fill <section>`. The model is the reviewer's memory of the repo. Every judgment below is made against it: does this PR fit the moving parts, does it change a contract, does it contradict a decision.
 
 ## 1. Persona
 Read `$TASTE_DIR/persona.md`. It defines who is reviewing: name, stance, what they never comment on.
@@ -52,45 +52,25 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base> [report-path]
 ```
 If a script fails, record why in the metrics (step 7) and continue.
 
-### Structural pass (you do this yourself, every review, before step 4)
-Do not rely on the lenses for these three. Scan the diff directly.
-1. **Types.** List every field, parameter, return, column or id whose type, range, nullability or format changed. For each, find its producers and consumers. Check the values that no longer fit.
-   Then grep the same name across the whole repo. If the same name carries a different type elsewhere, two concepts share one name. That is a boundary question.
-2. **Placement.** List every new check, validation, mapping or policy. Name its kind by what it does: validates client input, authorizes, maps, persists, formats. The sibling is where this repo does that same kind, not where the same data is read.
-   A class name states its job. New code in it that does a different kind of job is a second responsibility, whatever data it touches.
-   Also check the new code against the verified conventions in Boundaries. Breaking one is a boundary question.
-3. **Branches.** List every branch added to an existing if/else, switch or early-return chain. "Fine" must name the established pattern it follows, with one other place that uses it.
-   A branch that another layer already prevents is unreachable. Unreachable defensive code is slop, so it is a question.
-Most items on these lists are fine. They only become questions through the triggers in step 4.
-Write every item into `status.json` under `"pass"` (step 7), with your decision. An item you did not write down was not checked.
-For placement, the decision must name the sibling you found and its layer. "Fine" without a sibling is not a decision.
-A changed function with CRAP over 30 is complex and untested. That is trigger 3: it can break with nobody noticing.
-
-## 4. Write two files
+## 4. Read it as one whole, then write two files
 `$OUT/review.md` is for us. `$OUT/comment.md` is for the PR.
 
-First, help the reviewer learn the change fast. Then ask only what must be asked.
+The lenses and metrics feed your understanding. Now read the change yourself, as one piece, against the mental model. While you read, look closely at what the lenses often miss:
+- What changed type, range, nullability or format. Follow it to every producer and consumer. Grep the same name across the repo too: one name with two types means two concepts.
+- Where each new rule lives. Name its kind by what it does: validates input, authorizes, maps, persists. Compare with where the repo keeps that same kind. A class name states its job. Code of another kind inside it is a second job.
+- What each new branch is for. Does it follow a pattern the repo uses elsewhere? Is it reachable, or does another layer already stop it?
+- How the flow moved. Walk one request from entry to exit. Count how often each changed call runs on that path. Watch for the same steps copied into sibling branches. Copies must change together, and one will drift.
+You do not list these. Most of what you look at is fine, and fine things never appear anywhere. You only surface what is wrong.
 
-### When to ask
-Ask only when one of these is true:
-- Behaviour changes and the PR does not say so.
-- A type, range or format changes, and a producer or consumer was not updated for it.
-- A fallback, default, retry, swallowed error or unreachable guard hides a failure or a why.
-- A branch is patched into shared logic to handle one case.
-- Production can break and nobody would notice.
-- Something the change depends on is missing.
-- A boundary breaks. A rule lands outside the layer where rules of its kind already live. New code breaks a convention the code follows everywhere else. One name now means two things. Check the Boundaries in the mental model. Domain knows infra. Logic sits in the wrong layer. One context reaches into another. A class takes a second job. A port or switch grows instead of a new implementation.
+Surface something only when it changes what the reader must believe about the system:
+- It behaves differently than the PR says. This includes a type or format change that a caller was not updated for.
+- It can fail quietly. A fallback, default, retry, swallowed error or unreachable guard hides a failure. Complex code with no test (CRAP over 30) counts.
+- It breaks the shape of the repo. A rule sits outside the layer where its kind lives. One name means two things. A class takes a second job. A branch is patched in for one case. Steps are copied instead of shared. A convention the code follows everywhere else is broken.
+- Something it depends on is missing.
 
-Nothing else earns a question. Not taste. Not "could be simpler". Not procedure.
-Most PRs have zero or one question. Zero is a good review, not a lazy one. But zero comes after the structural pass, never instead of it.
-Never search for questions to fill a list. If you have to look hard, there is nothing.
-Two questions with the same root are one question.
-
-The lenses in step 3 find many things. Almost all of them are dropped. They feed your understanding, not the question list.
-A finding from this PR that hits a trigger is a question. Never move it into the model's Risks instead. The model holds beliefs about the repo, not questions you did not ask.
-
-### No verdict
-You never say ship, approve, or block. That is the reader's decision.
+Nothing else is surfaced. Not taste. Not "could be simpler". Not procedure.
+Most PRs have zero or one question. Zero is a good review. Two questions with the same root are one question.
+A finding from this PR is a question, never a line hidden in the model's Risks. You never say ship or block. That is the reader's call.
 
 `review.md` looks exactly like this:
 
@@ -113,12 +93,12 @@ Write `comment.md` only when there is at least one question. It holds the number
 
 Rules:
 - A question ends with "?". Never phrase it as an order.
-- Was/Now is exact. Quote the real string, value, status code, log level, or call. Never "the message changed".
-- The mechanic is concrete. Name the caller and what it does with the value. Example: "The worker matches this text to decide a retry. It will not match now."
+- Was/Now is exact. Quote the real string, value, status code, log level, or call.
+- The mechanic names the caller and what it does with the value.
 - Name things in words. No file paths, no line numbers, no code blocks.
 - No headings except the title. No praise, no filler, no summary.
 
-**Before you save:** read each question again. Does it hit one of the four triggers? If not, delete it. Then read each sentence. Over 12 words: split it.
+**Before you save:** does each question pass the "surface only when" test? If not, delete it. Over 12 words: split it.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).
@@ -150,14 +130,5 @@ Update `$OUT/status.json`: set `"status":"done"`, `"questions"` (count), `"ended
 }
 ```
 Empty list = measured, nothing over threshold. Missing key = not measured.
-`pass` holds the structural pass:
-```json
-"pass": {
-  "types":     [{"what": "<field/param/column>", "was": "<old type>", "now": "<new type>", "same_name_elsewhere": "<types found, with counts>", "decision": "fine: <why> | question <n>"}],
-  "placement": [{"what": "<new rule>", "where": "<class>", "kind": "<what the rule does>", "sibling": "<where this repo does the same kind>", "decision": "fine: <why> | question <n>"}],
-  "branches":  [{"what": "<added branch>", "where": "<class.method>", "decision": "fine: follows <pattern>, also in <place> | question <n>"}]
-}
-```
-Empty list = scanned, nothing found.
 If anything above made review.md impossible, set `"status":"failed"` and `"error"`.
 Print the question count, then stop.

@@ -33,21 +33,13 @@ function render(){const d=data[cur];
  ${d.error?`<pre style="color:#b91c1c">${d.error}</pre>`:''}
  ${d.comment?`<details><summary>Goes to the PR (comment.md)</summary>${marked.parse(d.comment)}</details>`:''}
  ${metrics(d.metrics)}
- ${pass(d.pass)}
  ${marked.parse((d.review||'_no review yet_').replace('![flow](flow.png)',d.png?`![flow](${d.png})`:''))}`;}
-function metrics(m){if(!m)return '<p class=v>metrics: not recorded</p>';
- const row=(k,list,f)=>k in m?(list.length?list.map(f).join('<br>'):'none over threshold'):'not measured';
- return `<table class=m><tr><td>coverage</td><td>${m.coverage||'not measured'}</td></tr>
- <tr><td>CRAP &gt; 30</td><td>${row('crap',m.crap||[],x=>`<b>${x.crap}</b> ${x.fn} · CCN ${x.ccn} · cov ${x.cov}%`)}</td></tr>
- <tr><td>complexity</td><td>${row('complexity',m.complexity||[],x=>`${x.fn} · CCN ${x.ccn}${x.cog!=null?' · COG '+x.cog:''}`)}</td></tr>
- <tr><td>drift</td><td>${row('drift',m.drift||[],x=>x)}</td></tr></table>`;}
-function pass(p){if(!p)return '';
- const sec=(k,f)=>`<tr><td>${k}</td><td>${(p[k]||[]).length?(p[k]).map(f).join('<br>'):'scanned, nothing'}</td></tr>`;
- const dec=x=>`<b style="color:${String(x.decision).startsWith('question')?'#b91c1c':'#047857'}">${x.decision}</b>`;
- return `<details><summary>structural pass</summary><table class=m>
- ${sec('types',x=>`${x.what}: ${x.was} → ${x.now}${x.same_name_elsewhere?' · same name elsewhere: '+x.same_name_elsewhere:''} · ${dec(x)}`)}
- ${sec('placement',x=>`${x.what}${x.kind?' ('+x.kind+')':''} in ${x.where} · sibling: ${x.sibling||'none named'} · ${dec(x)}`)}
- ${sec('branches',x=>`${x.what} in ${x.where} · ${dec(x)}`)}</table></details>`;}
+function metrics(m){if(!m)return '';
+ const rows=[];
+ if(m.coverage)rows.push(['coverage',m.coverage]);
+ if((m.crap||[]).length)rows.push(['CRAP &gt; 30',m.crap.map(x=>`<b>${x.crap}</b> ${x.fn} · CCN ${x.ccn} · cov ${x.cov}%`).join('<br>')]);
+ if((m.complexity||[]).length)rows.push(['complexity',m.complexity.map(x=>`${x.fn} · CCN ${x.ccn}${x.cog!=null?' · COG '+x.cog:''}`).join('<br>')]);
+ return rows.length?`<table class=m>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`:'';}
 async function post(){const d=data[cur];const r=await (await fetch('/api/approve',{method:'POST',body:JSON.stringify({repo:d.repo,number:d.number})})).json();alert(r.ok?'posted '+r.url:r.err);load();}
 async function rerun(){const d=data[cur];await fetch('/api/rerun',{method:'POST',body:JSON.stringify({repo:d.repo,number:d.number})});load();}
 load();setInterval(load,15000);
