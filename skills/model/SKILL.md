@@ -22,6 +22,7 @@ Good:
 > Fifty wire checks used to run on staging. They lived in the automation repo. Now they are Java tests in this service. Ninety more came out of the staging flows.
 
 ## The one rule
+The model holds how the repo is on its base branch, plus what humans decided. An open PR is never a fact in it. Its changes enter the model only after the PR merges or its questions are answered.
 There is exactly one mental model per repo. You edit that file. You never create a second file, a dated copy, a "v2", a summary, or a per-PR model. History lives in git (`$TASTE_DIR` is a git repo), not in files.
 Rewrite sections, do not append logs. A model is a current belief, not a diary. When a belief changes, replace it and put the reason in **Decisions** with the date and the PR.
 

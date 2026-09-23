@@ -71,7 +71,7 @@ Surface something only when it changes what the reader must believe about the sy
 
 Nothing else is surfaced. Not taste. Not "could be simpler". Not procedure.
 Most PRs have zero or one question. Zero is a good review. Two questions with the same root are one question.
-A finding from this PR is a question, never a line hidden in the model's Risks. You never say ship or block. That is the reader's call.
+A finding from this PR is a question, never a line in the model. The model describes the repo as it is on the base branch, plus what humans have decided. Something this PR introduces is not a belief yet. If you catch yourself writing "this PR is the first to…" or "this PR adds an exception…" into any model section, stop. That is a question. You never say ship or block. That is the reader's call.
 
 `review.md` looks exactly like this:
 
@@ -100,7 +100,7 @@ Rules:
 - Name things in words. No file paths, no line numbers, no code blocks.
 - No headings except the title. No praise, no filler, no summary.
 
-**Before you save:** does each question pass the "surface only when" test? If not, delete it. Over 12 words: split it.
+**Before you save:** does each question pass the "surface only when" test? If not, delete it. Is the mechanic more than two sentences? Cut it to two. Over 12 words: split it.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).
