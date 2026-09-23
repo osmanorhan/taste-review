@@ -140,6 +140,13 @@ Judge against the project's declared structure first, these principles second:
   shared logic. Almost always a rule the author should have pushed into config.
 - **Boundary duplication.** The same rule now expressed in two layers, which will diverge.
 
+SOLID, only as it shows up in code:
+- **Single responsibility.** A class gains a second reason to change. A service that now also formats, logs, or maps.
+- **Open/closed.** A new case added by growing a switch or an if-chain on a type, instead of a new implementation.
+- **Liskov.** An implementation that throws "not supported" or ignores part of its interface.
+- **Interface segregation.** A port grows methods most of its callers never use.
+- **Dependency inversion.** A domain class depends on a concrete adapter, not on the port.
+
 ### D. Unrequested decisions — the agent-slop audit
 
 This is the audit the caller most wants. Look for things the change does that the task never

@@ -37,6 +37,10 @@ One paragraph. What the repo is for, who calls it, what it must never break.
 - <part> — <what it does> — <talks to: part, part>
 (only parts that matter for a review; 5–15 lines)
 
+## Boundaries
+- <layer or bounded context> — <what it owns> — <may depend on: X> — <must never depend on: Y>
+(read from the code: packages, imports, ports. Not from docs.)
+
 ## Contracts
 - <schema / API / event / config> — <who writes it> — <who reads it> — <what breaks if it changes>
 

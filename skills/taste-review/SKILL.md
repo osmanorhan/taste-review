@@ -62,8 +62,9 @@ Ask only when one of these is true:
 - A fallback, default, retry or swallowed error hides a failure.
 - Production can break and nobody would notice.
 - Something the change depends on is missing.
+- A boundary breaks. Check the Boundaries in the mental model. Domain knows infra. Logic sits in the wrong layer. One context reaches into another. A class takes a second job. A port or switch grows instead of a new implementation.
 
-Nothing else earns a question. Not design taste. Not "could be simpler". Not procedure.
+Nothing else earns a question. Not taste. Not "could be simpler". Not procedure.
 Most PRs have zero or one question. Zero is a good review, not a lazy one.
 Never search for questions to fill a list. If you have to look hard, there is nothing.
 Two questions with the same root are one question.
@@ -84,13 +85,18 @@ One sentence says where it sits in the mental model.>
 ![flow](flow.png)
 
 <Either: "Nothing to ask."
- Or: one numbered line per question. The question, then what made you ask. Max 24 words.>
+ Or, per question:>
+1. <The question? Max 12 words.>
+   Was: <the exact old value, text or behaviour>. Now: <the exact new one>.
+   <1-2 short sentences. The mechanic: who reads it, what happens now, step by step.>
 ```
 
 Write `comment.md` only when there is at least one question. It holds the numbered questions and nothing else.
 
 Rules:
 - A question ends with "?". Never phrase it as an order.
+- Was/Now is exact. Quote the real string, value, status code, log level, or call. Never "the message changed".
+- The mechanic is concrete. Name the caller and what it does with the value. Example: "The worker matches this text to decide a retry. It will not match now."
 - Name things in words. No file paths, no line numbers, no code blocks.
 - No headings except the title. No praise, no filler, no summary.
 
