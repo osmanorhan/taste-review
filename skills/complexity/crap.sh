@@ -28,10 +28,11 @@ fi
 
 files=()
 while IFS= read -r f; do files+=("$f"); done < <(git diff --name-only --diff-filter=d "$(git merge-base "$base" HEAD)"...HEAD \
-  | grep -Ei '\.(py|js|jsx|ts|tsx|java|go|php|rb|cs|c|cc|cpp|h|hpp|swift|kt|scala|rs|lua)$')
+  | grep -Ei '\.(py|js|jsx|ts|tsx|java|go|php|rb|cs|c|cc|cpp|h|hpp|swift|kt|scala|rs|lua)$' \
+  | grep -Ev '(^|/)(src/test|tests?|__tests__|spec)/|_test\.go$|Tests?\.(java|kt|scala|cs|php)$|\.(test|spec)\.[jt]sx?$|(^|/)test_[^/]*\.py$')
 [ ${#files[@]} -eq 0 ] && { echo "no code files changed vs $base"; exit 0; }
 
 echo "base: $base   coverage: $cov   files: ${#files[@]}"
 echo
 echo "## CRAP (ccn^2 * (1-cov)^3 + ccn)"
-uvx lizard --csv "${files[@]}" 2>/dev/null | python3 ~/.claude/skills/complexity/crap.py "$cov"
+uvx lizard --csv "${files[@]}" 2>/dev/null | python3 "$(dirname "$0")/crap.py" "$cov"
