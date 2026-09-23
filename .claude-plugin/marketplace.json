@@ -1,0 +1,21 @@
+{
+  "name": "taste-reviewer",
+  "metadata": {
+    "version": "0.1.0",
+    "schemaVersion": "2.0.0",
+    "description": "Async PR review that builds understanding, not findings. Asks questions, draws the change, keeps one mental model per repo."
+  },
+  "owner": {
+    "name": "Osman Orhan"
+  },
+  "plugins": [
+    {
+      "name": "taste-reviewer",
+      "version": "0.1.0",
+      "description": "Reviews PRs assigned to you as a surrogate reviewer. Writes questions instead of findings, an excalidraw diagram of what moved, and one mental model per repo that grows with every review and every human comment. Local dashboard, manual approve before posting.",
+      "source": "./",
+      "category": "development",
+      "keywords": ["review", "pull-request", "mental-model", "architecture", "diagram"]
+    }
+  ]
+}

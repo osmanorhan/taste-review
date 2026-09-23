@@ -14,12 +14,17 @@ One file per repo: `~/.taste/model/owner/repo.md`. Rewritten in place, never cop
 - `bin/learn.sh owner/repo#N` (watch runs it when human comments appear) merges other reviewers' comments into it
 - `/taste-reviewer:model owner/repo <text>` in any Claude session: talk about the repo or a review; the file updates when a belief changes
 
-## Setup
+## Install
 ```bash
-cd skills/excalidraw-diagram/references && uv sync && uv run playwright install chromium
-cp launchd/*.plist ~/Library/LaunchAgents/ && for f in launchd/*.plist; do launchctl load ~/Library/LaunchAgents/$(basename $f); done
-edit ~/.taste/persona.md   # who is reviewing
+git clone <this repo> ~/work/taste-reviewer && ~/work/taste-reviewer/install.sh
 ```
-Manual: `bin/run.sh owner/repo#N` then open http://127.0.0.1:7331
+Needs `claude`, `gh` (logged in), `jq`, `uv`, `git`, `python3`. Safe to re-run.
+
+It installs the diagram renderer, creates `~/.taste`, loads two launchd jobs, and installs the plugin.
+Reviews run weekdays at 09, 12, 15 and 18. The dashboard starts at login on port 7331.
+
+Then edit `~/.taste/persona.md` — that file is who is reviewing. Two people with different personas get different reviews of the same PR.
+
+One PR now: `bin/run.sh owner/repo#N`
 
 Env: `TASTE_DIR` (default `~/.taste`), `TASTE_PORT` (7331).
