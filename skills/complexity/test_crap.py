@@ -52,4 +52,12 @@ assert "CRAP 20" in out, out
 out = run(ROW, "SF:a/b.py\nDA:90,0\nend_of_record\n", CRAP_MAX="1")
 assert "none over threshold" in out and "skipped" in out, out
 
+# jacoco: package + sourcefile, ci = covered instructions
+JROW = '5,4,29,2,5,"f@1-5@src/main/java/com/x/Foo.java","src/main/java/com/x/Foo.java","f","f()",1,5\n'
+J = '<report name="r"><package name="com/x"><sourcefile name="Foo.java"><line nr="1" mi="3" ci="0"/><line nr="3" mi="2" ci="0"/><line nr="5" mi="1" ci="0"/></sourcefile></package></report>'
+out = run(JROW, J, CRAP_MAX="10")
+assert "CRAP 20 (CCN 4, cov 0%)" in out, out
+out = run(JROW, J.replace('ci="0"', 'ci="2"'), CRAP_MAX="10")
+assert "none over threshold" in out, out
+
 print("ok")

@@ -18,7 +18,7 @@ fi
 [ -z "$base" ] && { echo "no base ref found"; exit 1; }
 
 if [ -z "$cov" ]; then
-  for c in coverage/lcov.info lcov.info coverage.xml build/logs/clover.xml clover.xml \
+  for c in build/reports/jacoco/test/jacocoTestReport.xml coverage/lcov.info lcov.info coverage.xml build/logs/clover.xml clover.xml \
            coverage/clover.xml coverage/cobertura-coverage.xml coverage.out cover.out; do
     [ -f "$c" ] && cov=$c && break
   done

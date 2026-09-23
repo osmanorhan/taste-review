@@ -13,6 +13,9 @@ main img{max-width:100%;border:1px solid #e5e7eb;border-radius:6px}
 button{padding:6px 12px;margin-right:8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer}
 button.p{background:#10b981;color:#fff;border-color:#10b981}
 code{background:#f1f5f9;padding:1px 4px;border-radius:3px}
+table.m{font-size:12px;border-collapse:collapse;margin:8px 0;color:#475569}
+table.m td{padding:3px 10px 3px 0;vertical-align:top}
+table.m td:first-child{color:#94a3b8;white-space:nowrap}
 </style>
 <aside id="list"></aside><main id="main">Pick a PR.</main>
 <script>
@@ -29,7 +32,14 @@ function render(){const d=data[cur];
  ${d.excalidraw?`<a href="${d.excalidraw}" download>flow.excalidraw</a>`:''}${d.posted_url?` · posted: <a href="${d.posted_url}" target=_blank>comment</a>`:''}</p>
  ${d.error?`<pre style="color:#b91c1c">${d.error}</pre>`:''}
  ${d.comment?`<details><summary>Goes to the PR (comment.md)</summary>${marked.parse(d.comment)}</details>`:''}
+ ${metrics(d.metrics)}
  ${marked.parse((d.review||'_no review yet_').replace('![flow](flow.png)',d.png?`![flow](${d.png})`:''))}`;}
+function metrics(m){if(!m)return '<p class=v>metrics: not recorded</p>';
+ const row=(k,list,f)=>k in m?(list.length?list.map(f).join('<br>'):'none over threshold'):'not measured';
+ return `<table class=m><tr><td>coverage</td><td>${m.coverage||'not measured'}</td></tr>
+ <tr><td>CRAP &gt; 30</td><td>${row('crap',m.crap||[],x=>`<b>${x.crap}</b> ${x.fn} · CCN ${x.ccn} · cov ${x.cov}%`)}</td></tr>
+ <tr><td>complexity</td><td>${row('complexity',m.complexity||[],x=>`${x.fn} · CCN ${x.ccn}${x.cog!=null?' · COG '+x.cog:''}`)}</td></tr>
+ <tr><td>drift</td><td>${row('drift',m.drift||[],x=>x)}</td></tr></table>`;}
 async function post(){const d=data[cur];const r=await (await fetch('/api/approve',{method:'POST',body:JSON.stringify({repo:d.repo,number:d.number})})).json();alert(r.ok?'posted '+r.url:r.err);load();}
 async function rerun(){const d=data[cur];await fetch('/api/rerun',{method:'POST',body:JSON.stringify({repo:d.repo,number:d.number})});load();}
 load();setInterval(load,15000);

@@ -30,6 +30,11 @@ def xmlcov(path):
         if f:
             for l in cl.iter("line"):
                 _add(h, f, int(l.get("number")), int(float(l.get("hits", 0))))
+    for pkg in root.iter("package"):                   # jacoco
+        for sf in pkg.iter("sourcefile"):
+            f = f"{pkg.get('name')}/{sf.get('name')}"
+            for l in sf.iter("line"):
+                _add(h, f, int(l.get("nr")), int(l.get("ci", 0)))
     for fl in root.iter("file"):                       # clover
         f = fl.get("path") or fl.get("name")
         if f:

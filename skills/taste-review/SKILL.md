@@ -42,13 +42,14 @@ Flag early: any file under migrations/, schema/, *.sql, *.proto, openapi/*, cont
 ## 3. Lenses (run in parallel with the Agent tool)
 - `taste-reviewer:architect` — prompt: "Review branch HEAD vs origin/<base> in this repo. PR owner/repo#N. Return your normal output."
 - `taste-reviewer:reliability` — prompt: "Scope: git diff origin/<base>...HEAD. Return your normal output."
-- Bash, not an agent:
+- Metrics, with Bash, not an agent. First make a coverage report with the repo's own test task. Examples: Gradle `./gradlew test jacocoTestReport`, npm `npx jest --coverage`, Go `go test -coverprofile=coverage.out ./...`, PHP `vendor/bin/phpunit --coverage-clover clover.xml`. Use what the repo already has. Never add a tool. If tests need a database or network you do not have, skip coverage and say why.
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/complexity.sh origin/<base>
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/drift.sh origin/<base>
-bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base>
+bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base> [report-path]
 ```
-If a script fails, note it in "Not measured" and continue.
+If a script fails, record why in the metrics (step 7) and continue.
+A changed function with CRAP over 30 is complex and untested. That is trigger 3: it can break with nobody noticing.
 
 ## 4. Write two files
 `$OUT/review.md` is for us. `$OUT/comment.md` is for the PR.
@@ -114,6 +115,16 @@ cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <o
 ```
 
 ## 7. Finish
-Update `$OUT/status.json`: set `"status":"done"`, `"questions"` (count), `"ended"` (ISO now). Keep other fields.
+Update `$OUT/status.json`: set `"status":"done"`, `"questions"` (count), `"ended"` (ISO now), and `"metrics"`. Keep other fields.
+`metrics` holds the numbers exactly as the scripts printed them. Numbers never go in review.md. The dashboard shows them.
+```json
+"metrics": {
+  "coverage": "jacoco, 71% line" | "not measured: <why>",
+  "crap": [{"fn": "ClassName.method", "crap": 42, "ccn": 9, "cov": 12}],
+  "complexity": [{"fn": "ClassName.method", "ccn": 14, "cog": 18}],
+  "drift": ["<one line per hit>"]
+}
+```
+Empty list = measured, nothing over threshold. Missing key = not measured.
 If anything above made review.md impossible, set `"status":"failed"` and `"error"`.
 Print the question count, then stop.
