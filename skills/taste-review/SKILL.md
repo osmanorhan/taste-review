@@ -115,7 +115,7 @@ cd ${CLAUDE_PLUGIN_ROOT}/skills/excalidraw-diagram/references && uv run python r
 Read the PNG once. Fix overlaps or clipped text. Render again. Stop after the second render.
 
 ## 6. Update the mental model
-Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`): new or changed moving parts, contracts, a Decisions line for this PR if it makes one, Risks if a block item stays open. Do not append a log. Commit:
+Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`). If a section from its format is missing, fill it from the code first. Then: new or changed moving parts, contracts, a Decisions line for this PR if it makes one, Risks if a block item stays open. Do not append a log. Commit:
 ```bash
 cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <one line>"
 ```
