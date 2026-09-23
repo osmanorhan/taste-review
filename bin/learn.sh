@@ -7,7 +7,7 @@ ref=$1; repo=${ref%#*}; n=${ref#*#}
 s=$TASTE_DIR/reviews/$repo/$n/status.json
 [ -f "$s" ] || { echo "no review for $ref"; exit 1; }
 cd "$TASTE_DIR/repos/$repo" && TASTE_DIR=$TASTE_DIR claude -p "/taste-reviewer:model learn $ref" \
-  --plugin-dir "$PLUGIN" --permission-mode bypassPermissions \
+  --plugin-dir "$PLUGIN" --settings '{"enabledPlugins":{"taste-reviewer@taste-reviewer":false}}' --permission-mode bypassPermissions \
   >> "$TASTE_DIR/logs/${repo//\//_}-$n.log" 2>&1
 c=$(gh api "repos/$repo/pulls/$n" -q '.comments + .review_comments')
 jq --argjson c "$c" --arg t "$(date -u +%FT%TZ)" '.learned_comments=$c|.learned=$t' "$s" > "$s.tmp" && mv "$s.tmp" "$s"

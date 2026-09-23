@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install taste-reviewer for the current user. Safe to re-run.
+# Install or update taste-reviewer for the current user. Re-run after git pull.
 set -eu
 P=$(cd "$(dirname "$0")" && pwd)
 TASTE_DIR=${TASTE_DIR:-$HOME/.taste}
@@ -47,8 +47,9 @@ job com.taste.watch "<string>$P/bin/watch.sh</string>" "<key>StartCalendarInterv
 job com.taste.dashboard "<string>$(command -v python3)</string><string>$P/bin/dashboard.py</string>" "<key>KeepAlive</key><true/>"
 
 echo "4/4 plugin"
-claude plugin marketplace add "$P" 2>/dev/null || true
-claude plugin install taste-reviewer@taste-reviewer 2>/dev/null || echo "  install by hand: claude plugin install taste-reviewer@taste-reviewer"
+claude plugin marketplace add "$P" 2>/dev/null || claude plugin marketplace update taste-reviewer >/dev/null
+claude plugin uninstall taste-reviewer@taste-reviewer >/dev/null 2>&1 || true
+claude plugin install taste-reviewer@taste-reviewer >/dev/null || echo "  install by hand: claude plugin install taste-reviewer@taste-reviewer"
 
 echo
 echo "done. dashboard: http://127.0.0.1:${TASTE_PORT:-7331}"

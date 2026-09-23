@@ -25,7 +25,7 @@ git -C "$wd" clean -qfd
 [ "$(git -C "$wd" rev-parse HEAD)" = "$sha" ] || fail "checkout is not at $sha"
 
 cd "$wd" && TASTE_DIR=$TASTE_DIR claude -p "/taste-reviewer:taste-review $ref" \
-  --plugin-dir "$PLUGIN" --permission-mode bypassPermissions \
+  --plugin-dir "$PLUGIN" --settings '{"enabledPlugins":{"taste-reviewer@taste-reviewer":false}}' --permission-mode bypassPermissions \
   > "$TASTE_DIR/logs/${repo//\//_}-$n.log" 2>&1
 rc=$?
 
