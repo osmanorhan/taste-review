@@ -46,7 +46,7 @@ Flag early: any file under migrations/, schema/, *.sql, *.proto, openapi/*, cont
 ## 3. Lenses (run in parallel with the Agent tool)
 - `taste-reviewer:architect` — prompt: "Review branch HEAD vs origin/<base> in this repo. PR owner/repo#N. Return your normal output."
 - `taste-reviewer:reliability` — prompt: "Scope: git diff origin/<base>...HEAD. Return your normal output."
-- Metrics, with Bash, not an agent. First make a coverage report with the repo's own test task. Examples: Gradle `./gradlew test jacocoTestReport`, npm `npx jest --coverage`, Go `go test -coverprofile=coverage.out ./...`, PHP `vendor/bin/phpunit --coverage-clover clover.xml`. Use what the repo already has. Never add a tool. If tests need a database or network you do not have, skip coverage and say why.
+- Metrics, with Bash, not an agent. First make a coverage report with the repo's own test task. Examples: Gradle `./gradlew test jacocoTestReport`, npm `npx jest --coverage`, Go `go test -coverprofile=coverage.out ./...`, PHP `vendor/bin/phpunit --coverage-clover clover.xml`. Use what the repo already has. If it has no coverage tool, run one just for this review without changing any file the repo tracks: Python `uv run --with pytest-cov pytest --cov=<src> --cov-report=lcov:coverage/lcov.info`, Node `npx --yes c8 --reporter=lcov npm test`. Never edit dependency files. If tests need a database or network you do not have, skip coverage and say why.
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/complexity.sh origin/<base>
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/drift.sh origin/<base>

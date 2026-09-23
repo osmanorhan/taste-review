@@ -35,4 +35,4 @@ while IFS= read -r f; do files+=("$f"); done < <(git diff --name-only --diff-fil
 echo "base: $base   coverage: $cov   files: ${#files[@]}"
 echo
 echo "## CRAP (ccn^2 * (1-cov)^3 + ccn)"
-uvx lizard --csv "${files[@]}" 2>/dev/null | python3 "$(dirname "$0")/crap.py" "$cov"
+uvx lizard --csv "${files[@]}" 2>/dev/null | python3 "$(dirname "$0")/changed.py" csv "$base" | python3 "$(dirname "$0")/crap.py" "$cov"

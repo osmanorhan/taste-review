@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cyclomatic (lizard) + cognitive (complexipy) complexity for changed files.
+# Cyclomatic (lizard) + cognitive (complexipy) complexity for functions this branch changed.
 # usage: complexity.sh [base-ref]   default base: origin/develop or origin/main
 set -u
 
@@ -26,11 +26,17 @@ while IFS= read -r f; do files+=("$f"); done < <(git diff --name-only --diff-fil
 echo "base: $base   files: ${#files[@]}   thresholds: CCN>$CCN_MAX  COG>$COG_MAX"
 echo
 echo "## Cyclomatic (lizard)"
-uvx lizard -w -C "$CCN_MAX" "${files[@]}" 2>/dev/null | sed 's/ warning:/ /' | grep . || echo "  none over threshold"
+H=$(dirname "$0")
+uvx lizard --csv "${files[@]}" 2>/dev/null | python3 "$H/changed.py" csv "$base" \
+  | python3 -c 'import csv,sys
+m=int(sys.argv[1]); rows=[r for r in csv.reader(sys.stdin) if int(r[1])>m]
+for r in sorted(rows,key=lambda r:-int(r[1])): print(f"{r[6]}:{r[9]} {r[7]} — CCN {r[1]}")
+print("  none over threshold") if not rows else None' "$CCN_MAX"
 
 py=(); for f in "${files[@]}"; do [[ $f == *.py ]] && py+=("$f"); done
 if [ ${#py[@]} -gt 0 ]; then
   echo
   echo "## Cognitive (complexipy)"
-  uvx complexipy --max-complexity-allowed "$COG_MAX" --failed --plain --sort desc "${py[@]}" 2>&1 | grep . | tail -40
+  j=$(mktemp); uvx complexipy --output-format json --output "$j" "${py[@]}" >/dev/null 2>&1
+  python3 "$H/changed.py" cog "$base" "$COG_MAX" "$j"; rm -f "$j"
 fi
