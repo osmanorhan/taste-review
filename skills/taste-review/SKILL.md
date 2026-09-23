@@ -60,12 +60,13 @@ The lenses and metrics feed your understanding. Now read the change yourself, as
 - Where each new rule lives. Name its kind by what it does: validates input, authorizes, maps, persists. Compare with where the repo keeps that same kind. A class name states its job. Code of another kind inside it is a second job.
 - What each new branch is for. Does it follow a pattern the repo uses elsewhere? Is it reachable, or does another layer already stop it?
 - How the flow moved. Walk one request from entry to exit. Count how often each changed call runs on that path. Watch for the same steps copied into sibling branches. Copies must change together, and one will drift.
+- What the new code rebuilds. Does it hand-roll something the language, the framework or an installed dependency already does? Is a new abstraction, config value or layer used by only one caller? First check how the repo does it elsewhere. A hand-written way the code uses on purpose everywhere is a convention, not waste. One small test is never waste.
 You do not list these. Most of what you look at is fine, and fine things never appear anywhere. You only surface what is wrong.
 
 Surface something only when it changes what the reader must believe about the system:
 - It behaves differently than the PR says. This includes a type or format change that a caller was not updated for.
 - It can fail quietly. A fallback, default, retry, swallowed error or unreachable guard hides a failure. Complex code with no test (CRAP over 30) counts.
-- It breaks the shape of the repo. A rule sits outside the layer where its kind lives. One name means two things. A class takes a second job. A branch is patched in for one case. Steps are copied instead of shared. A convention the code follows everywhere else is broken.
+- It breaks the shape of the repo. A rule sits outside the layer where its kind lives. One name means two things. A class takes a second job. A branch is patched in for one case. Steps are copied instead of shared. A convention the code follows everywhere else is broken. Code rebuilds what the platform already gives, or adds a layer with one user.
 - Something it depends on is missing.
 
 Nothing else is surfaced. Not taste. Not "could be simpler". Not procedure.
@@ -95,6 +96,7 @@ Rules:
 - A question ends with "?". Never phrase it as an order.
 - Was/Now is exact. Quote the real string, value, status code, log level, or call.
 - The mechanic names the caller and what it does with the value.
+- When the question is about code that should not exist, name what replaces it: the library call, the framework feature, the existing helper, or nothing.
 - Name things in words. No file paths, no line numbers, no code blocks.
 - No headings except the title. No praise, no filler, no summary.
 
