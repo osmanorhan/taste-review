@@ -49,6 +49,13 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/drift.sh origin/<base>
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base> [report-path]
 ```
 If a script fails, record why in the metrics (step 7) and continue.
+
+### Structural pass (you do this yourself, every review, before step 4)
+Do not rely on the lenses for these three. Scan the diff directly.
+1. **Types.** List every field, parameter, return, column or id whose type, range, nullability or format changed. For each, find its producers and consumers. Check the values that no longer fit.
+2. **Placement.** List every new check, validation, mapping or policy. For each, find where this repo already does that kind of thing. Compare the layer. Use the Boundaries in the mental model.
+3. **Branches.** List every branch added to an existing if/else, switch or early-return chain. For each, decide: general rule, or one case patched in?
+Most items on these lists are fine. They only become questions through the triggers in step 4.
 A changed function with CRAP over 30 is complex and untested. That is trigger 3: it can break with nobody noticing.
 
 ## 4. Write two files
@@ -59,13 +66,15 @@ First, help the reviewer learn the change fast. Then ask only what must be asked
 ### When to ask
 Ask only when one of these is true:
 - Behaviour changes and the PR does not say so.
+- A type, range or format changes, and a producer or consumer was not updated for it.
 - A fallback, default, retry or swallowed error hides a failure.
+- A branch is patched into shared logic to handle one case.
 - Production can break and nobody would notice.
 - Something the change depends on is missing.
-- A boundary breaks. Check the Boundaries in the mental model. Domain knows infra. Logic sits in the wrong layer. One context reaches into another. A class takes a second job. A port or switch grows instead of a new implementation.
+- A boundary breaks. A rule lands outside the layer where rules of its kind already live. Check the Boundaries in the mental model. Domain knows infra. Logic sits in the wrong layer. One context reaches into another. A class takes a second job. A port or switch grows instead of a new implementation.
 
 Nothing else earns a question. Not taste. Not "could be simpler". Not procedure.
-Most PRs have zero or one question. Zero is a good review, not a lazy one.
+Most PRs have zero or one question. Zero is a good review, not a lazy one. But zero comes after the structural pass, never instead of it.
 Never search for questions to fill a list. If you have to look hard, there is nothing.
 Two questions with the same root are one question.
 

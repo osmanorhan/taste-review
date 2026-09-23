@@ -38,7 +38,7 @@ One paragraph. What the repo is for, who calls it, what it must never break.
 (only parts that matter for a review; 5–15 lines)
 
 ## Boundaries
-- <layer or bounded context> — <what it owns> — <may depend on: X> — <must never depend on: Y>
+- <layer or bounded context> — <what it owns> — <rules that live here: input validation, auth, mapping, ...> — <may depend on: X> — <must never depend on: Y>
 (read from the code: packages, imports, ports. Not from docs.)
 
 ## Contracts

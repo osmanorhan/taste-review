@@ -96,6 +96,12 @@ Hunt specifically for:
 - **Idempotency.** Can this now run twice and double-apply? Was there a guard that is now
   bypassed or that a new code path routes around?
 - **Concurrency.** New shared state, a cache, a module-level mutable, a lock removed.
+- **Type changes.** Any field, parameter, return value, column, or id whose type, range,
+  nullability, or format changed. `String` → `long`, `int` → `long`, sized → unsized, nullable
+  → required. Trace every producer and every consumer with grep. For each one check: can it
+  still produce or read every value? What happens to a value that no longer fits: overflow,
+  parse error, truncation, or a different status code? Does it cross a wire? JSON numbers above
+  2^53 lose precision in JavaScript consumers. Does it cross storage? The column type must agree.
 
 For each: state the concrete input that produces the old output and the new output. No
 input, no finding.
@@ -136,8 +142,14 @@ Judge against the project's declared structure first, these principles second:
 - **Tenancy / scoping.** In a multi-tenant system, a query, key, or cache entry missing the
   tenant/partner/account scope. This is both an architecture bug and a data-leak bug — always
   check it explicitly.
-- **Special-casing.** `if tenant == "X"`, `if env == "prod"`, a hardcoded ID or name inside
-  shared logic. Almost always a rule the author should have pushed into config.
+- **Bolted-on branch.** A new `else if`, `case`, or early return added to an existing
+  conditional to handle one input, one tenant, one env, or one error. List every branch the diff
+  adds to a conditional that already existed. For each: is it a new general rule, or one case
+  patched in? One case patched into shared logic is a monkeypatch.
+- **Misplaced rule.** For every new check, validation, mapping, or policy in the diff, find where
+  this repo already does the same kind of thing. Grep for a sibling: another length check,
+  another parse, another permission check. If the new one lands in a different layer than its
+  siblings, that is a layer violation, even when the code works.
 - **Boundary duplication.** The same rule now expressed in two layers, which will diverge.
 
 SOLID, only as it shows up in code:
