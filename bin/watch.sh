@@ -22,8 +22,11 @@ for s in "$TASTE_DIR"/reviews/*/*/*/status.json; do
   [ -f "$s" ] || continue
   st=$(jq -r .status "$s"); [ "$st" = done ] || [ "$st" = posted ] || continue
   repo=$(jq -r .repo "$s"); n=$(jq -r .number "$s")
-  c=$(gh api "repos/$repo/pulls/$n" -q '.comments + .review_comments' 2>/dev/null) || continue
-  [ "$c" -gt "$(jq -r '.learned_comments // 0' "$s")" ] || continue
-  echo "$(date -u +%FT%TZ) learn $repo#$n ($c comments)"
+  pr=$(gh api "repos/$repo/pulls/$n" -q '{c: (.comments + .review_comments), merged: .merged}' 2>/dev/null) || continue
+  c=$(jq -r .c <<<"$pr"); merged=$(jq -r .merged <<<"$pr")
+  new_comments=$([ "$c" -gt "$(jq -r '.learned_comments // 0' "$s")" ] && echo 1 || echo 0)
+  new_merge=$([ "$merged" = true ] && [ "$(jq -r '.learned_merged // false' "$s")" != true ] && echo 1 || echo 0)
+  [ "$new_comments" = 1 ] || [ "$new_merge" = 1 ] || continue
+  echo "$(date -u +%FT%TZ) learn $repo#$n (comments=$c merged=$merged)"
   "$BIN/learn.sh" "$repo#$n"
 done

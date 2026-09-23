@@ -115,7 +115,7 @@ cd ${CLAUDE_PLUGIN_ROOT}/skills/excalidraw-diagram/references && uv run python r
 Read the PNG once. Fix overlaps or clipped text. Render again. Stop after the second render.
 
 ## 6. Update the mental model
-Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`): new or changed moving parts, contracts, a Decisions line for this PR if it makes one, Risks only for things that are not this PR's questions. Do not append a log. Commit:
+Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`). Change only beliefs about the base branch that reading this PR showed were wrong or missing. The PR's own changes do not go in. They enter when it merges, through the learn step. If nothing about the base changed, do not touch the model. Do not append a log. Commit:
 ```bash
 cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <one line>"
 ```

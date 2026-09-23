@@ -9,6 +9,6 @@ s=$TASTE_DIR/reviews/$repo/$n/status.json
 cd "$TASTE_DIR/repos/$repo" && TASTE_DIR=$TASTE_DIR claude -p "/taste-reviewer:model learn $ref" \
   --plugin-dir "$PLUGIN" --settings '{"enabledPlugins":{"taste-reviewer@taste-reviewer":false}}' --permission-mode bypassPermissions \
   --output-format stream-json --verbose >> "$TASTE_DIR/logs/${repo//\//_}-$n-learn.jsonl" 2>&1
-c=$(gh api "repos/$repo/pulls/$n" -q '.comments + .review_comments')
-jq --argjson c "$c" --arg t "$(date -u +%FT%TZ)" '.learned_comments=$c|.learned=$t' "$s" > "$s.tmp" && mv "$s.tmp" "$s"
-echo "learned $ref ($c comments)"
+pr=$(gh api "repos/$repo/pulls/$n" -q '{c: (.comments + .review_comments), merged: .merged}')
+jq --argjson p "$pr" --arg t "$(date -u +%FT%TZ)" '.learned_comments=$p.c|.learned_merged=$p.merged|.learned=$t' "$s" > "$s.tmp" && mv "$s.tmp" "$s"
+echo "learned $ref ($(jq -c . <<<"$pr"))"
