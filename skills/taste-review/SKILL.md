@@ -24,7 +24,8 @@ Good:
 > Fifty wire checks used to run on staging. They lived in the automation repo. Now they are Java tests in this service. Ninety more came out of the staging flows.
 
 ## 0. Mental model
-Read `$TASTE_DIR/model/owner/repo.md`. If it does not exist, run `taste-reviewer:model bootstrap owner/repo` first (see that skill). The model is the reviewer's memory of the repo. Every judgment below is made against it: does this PR fit the moving parts, does it change a contract, does it contradict a decision.
+Read `$TASTE_DIR/model/owner/repo.md`. If it does not exist, run `taste-reviewer:model bootstrap owner/repo` first (see that skill).
+Then compare it with the format in `taste-reviewer:model`. If a section is missing, fill it now from the code on `origin/<base>`, before you look at the PR. The structural pass needs it. Commit it on its own: `model: owner/repo — fill <section>`. The model is the reviewer's memory of the repo. Every judgment below is made against it: does this PR fit the moving parts, does it change a contract, does it contradict a decision.
 
 ## 1. Persona
 Read `$TASTE_DIR/persona.md`. It defines who is reviewing: name, stance, what they never comment on.
@@ -56,6 +57,8 @@ Do not rely on the lenses for these three. Scan the diff directly.
 2. **Placement.** List every new check, validation, mapping or policy. For each, find where this repo already does that kind of thing. Compare the layer. Use the Boundaries in the mental model.
 3. **Branches.** List every branch added to an existing if/else, switch or early-return chain. For each, decide: general rule, or one case patched in?
 Most items on these lists are fine. They only become questions through the triggers in step 4.
+Write every item into `status.json` under `"pass"` (step 7), with your decision. An item you did not write down was not checked.
+For placement, the decision must name the sibling you found and its layer. "Fine" without a sibling is not a decision.
 A changed function with CRAP over 30 is complex and untested. That is trigger 3: it can break with nobody noticing.
 
 ## 4. Write two files
@@ -79,6 +82,7 @@ Never search for questions to fill a list. If you have to look hard, there is no
 Two questions with the same root are one question.
 
 The lenses in step 3 find many things. Almost all of them are dropped. They feed your understanding, not the question list.
+A finding from this PR that hits a trigger is a question. Never move it into the model's Risks instead. The model holds beliefs about the repo, not questions you did not ask.
 
 ### No verdict
 You never say ship, approve, or block. That is the reader's decision.
@@ -124,7 +128,7 @@ cd ${CLAUDE_PLUGIN_ROOT}/skills/excalidraw-diagram/references && uv run python r
 Read the PNG once. Fix overlaps or clipped text. Render again. Stop after the second render.
 
 ## 6. Update the mental model
-Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`). If a section from its format is missing, fill it from the code first. Then: new or changed moving parts, contracts, a Decisions line for this PR if it makes one, Risks if a block item stays open. Do not append a log. Commit:
+Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`): new or changed moving parts, contracts, a Decisions line for this PR if it makes one, Risks only for things that are not this PR's questions. Do not append a log. Commit:
 ```bash
 cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <one line>"
 ```
@@ -141,5 +145,14 @@ Update `$OUT/status.json`: set `"status":"done"`, `"questions"` (count), `"ended
 }
 ```
 Empty list = measured, nothing over threshold. Missing key = not measured.
+`pass` holds the structural pass:
+```json
+"pass": {
+  "types":     [{"what": "<field/param/column>", "was": "<old type>", "now": "<new type>", "decision": "fine: <why> | question <n>"}],
+  "placement": [{"what": "<new rule>", "where": "<class>", "sibling": "<where this repo does the same kind of thing>", "decision": "fine: <why> | question <n>"}],
+  "branches":  [{"what": "<added branch>", "where": "<class.method>", "decision": "fine: general rule | question <n>"}]
+}
+```
+Empty list = scanned, nothing found.
 If anything above made review.md impossible, set `"status":"failed"` and `"error"`.
 Print the question count, then stop.

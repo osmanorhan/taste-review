@@ -26,7 +26,7 @@ git -C "$wd" clean -qfd
 
 cd "$wd" && TASTE_DIR=$TASTE_DIR claude -p "/taste-reviewer:taste-review $ref" \
   --plugin-dir "$PLUGIN" --settings '{"enabledPlugins":{"taste-reviewer@taste-reviewer":false}}' --permission-mode bypassPermissions \
-  > "$TASTE_DIR/logs/${repo//\//_}-$n.log" 2>&1
+  --output-format stream-json --verbose > "$TASTE_DIR/logs/${repo//\//_}-$n.jsonl" 2>&1
 rc=$?
 
 if [ ! -s "$out/review.md" ] || [ "$(jq -r .status "$out/status.json")" = running ]; then
