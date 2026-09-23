@@ -15,6 +15,7 @@ The reader has ADHD. English is their second language. A long sentence is not re
 - No clause joining: no "which", "that used to", "plus", "while", "so that", no semicolons, no dashes holding a second thought.
 - No participle chains ("rewritten as ... , buried inside ...").
 - Plain words. "runs" not "is executed". "now" not "as of this change".
+- B1 English. Use words a learner knows. "code path" not "tail". "user" not "actor". "reason" not "rationale". Code names stay as they are.
 - Never pack a number and an explanation into one sentence. Split them.
 
 Bad:
@@ -38,7 +39,8 @@ gh pr view N --repo owner/repo --json title,body,baseRefName,headRefOid,changedF
 git diff --stat origin/<base>...HEAD
 git diff --name-only origin/<base>...HEAD
 ```
-Read the changed files whole. Do not trust the PR body or ticket text as fact.
+Read the changed files whole.
+Read the PR body and the commit messages to learn what the PR says it solves and what it already explains. Verify each claim in the code. A claim the code does not back is not a fact.
 Flag early: any file under migrations/, schema/, *.sql, *.proto, openapi/*, contracts/, or a changed exported type = **schema/architecture change**. Those get the deepest read.
 
 ## 3. Lenses (run in parallel with the Agent tool)
@@ -84,23 +86,28 @@ One sentence says where it sits in the mental model.>
 ![flow](flow.png)
 
 <Either: "Nothing to ask."
- Or, per question:>
-1. <The question? Max 12 words.>
-   Was: <the exact old value, text or behaviour>. Now: <the exact new one>.
-   <1-2 short sentences. The mechanic: who reads it, what happens now, step by step.>
+ Or, per question, this block. Keep the blank lines. They make GitHub show a clean list.>
+
+**1. <The question? Max 12 words.>**
+
+- **Before:** <the exact old value, text or behaviour>
+- **Now:** <the exact new one>
+- **Risk:** <one sentence: what can go wrong, and who sees it>
+- **Fix:** <one sentence: what replaces it. Leave this line out if you do not know.>
 ```
 
-Write `comment.md` only when there is at least one question. It holds the numbered questions and nothing else.
+Write `comment.md` only when there is at least one question. It holds the question blocks and nothing else.
 
 Rules:
 - A question ends with "?". Never phrase it as an order.
-- Was/Now is exact. Quote the real string, value, status code, log level, or call.
-- The mechanic names the caller and what it does with the value.
-- When the question is about code that should not exist, name what replaces it: the library call, the framework feature, the existing helper, or nothing.
-- Name things in words. No file paths, no line numbers, no code blocks.
-- No headings except the title. No praise, no filler, no summary.
+- Before and Now are exact. Quote the real string, value, status code, log level, or call. Wrap code names in backticks.
+- Risk names who is hurt and how. One sentence.
+- Fix names the library call, the framework feature, the existing helper, or "delete it".
+- No file paths, no line numbers, no code blocks.
+- No other headings. No praise, no filler, no summary.
+- Do not ask about something the PR already solves or explains. Check the code, the tests and the PR body first. Ask only when the reason given does not hold in the code.
 
-**Before you save:** does each question pass the "surface only when" test? If not, delete it. Is the mechanic more than two sentences? Cut it to two. Over 12 words: split it.
+**Before you save:** does each question pass the "surface only when" test? Does the PR already solve or explain it? Then delete it. Is any line more than one sentence? Cut it. Over 12 words: split it.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).

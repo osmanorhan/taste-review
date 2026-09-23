@@ -13,6 +13,7 @@ The reader has ADHD. English is their second language. A long sentence is not re
 - No clause joining: no "which", "that used to", "plus", "while", "so that", no semicolons, no dashes holding a second thought.
 - No participle chains ("rewritten as ... , buried inside ...").
 - Plain words. "runs" not "is executed". "now" not "as of this change".
+- B1 English. Use words a learner knows. "code path" not "tail". "user" not "actor". "reason" not "rationale". Code names stay as they are.
 - Never pack a number and an explanation into one sentence. Split them.
 
 Bad:
