@@ -37,6 +37,7 @@ function render(){const d=data[cur];
 function metrics(m){if(!m)return '';
  const rows=[];
  if(m.coverage)rows.push(['coverage',m.coverage]);
+ if(m.read&&m.read.files<m.read.of)rows.push(['read','<b style="color:#b91c1c">'+m.read.files+' of '+m.read.of+' changed files</b>']);
  if((m.crap||[]).length)rows.push(['CRAP &gt; 30',m.crap.map(x=>`<b>${x.crap}</b> ${x.fn} · CCN ${x.ccn} · cov ${x.cov}%`).join('<br>')]);
  if((m.complexity||[]).length)rows.push(['complexity',m.complexity.map(x=>`${x.fn} · CCN ${x.ccn}${x.cog!=null?' · COG '+x.cog:''}`).join('<br>')]);
  return rows.length?`<table class=m>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`:'';}
