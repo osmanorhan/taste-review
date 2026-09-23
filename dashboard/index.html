@@ -25,7 +25,7 @@ async function model(repo){const m=await (await fetch('/api/model/'+repo)).json(
  main.innerHTML=`<h2>${repo} — mental model</h2><p class=v>${m.history.length} changes: ${m.history.slice(0,5).join(' · ')}</p>${marked.parse(m.model||'_no model yet. First review bootstraps it._')}`;}
 function render(){const d=data[cur];
  main.innerHTML=`<p><a href="${d.url}" target=_blank>${d.url}</a> · <a href="#" onclick="model('${d.repo}');return false">mental model</a> · <code>${(d.sha||'').slice(0,7)}</code> · ${d.started||''}</p>
- <p><button class=p onclick="post()" ${d.status!=='done'?'disabled':''}>Approve → post to PR</button><button onclick="rerun()">Re-run</button>
+ <p>${d.comment?`<button class=p onclick="post()" ${d.status!=='done'?'disabled':''}>Approve → post to PR</button>`:'<i>Nothing to post.</i> '}<button onclick="rerun()">Re-run</button>
  ${d.excalidraw?`<a href="${d.excalidraw}" download>flow.excalidraw</a>`:''}${d.posted_url?` · posted: <a href="${d.posted_url}" target=_blank>comment</a>`:''}</p>
  ${d.error?`<pre style="color:#b91c1c">${d.error}</pre>`:''}
  ${d.comment?`<details><summary>Goes to the PR (comment.md)</summary>${marked.parse(d.comment)}</details>`:''}

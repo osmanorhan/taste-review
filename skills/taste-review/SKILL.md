@@ -51,64 +51,49 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base>
 If a script fails, note it in "Not measured" and continue.
 
 ## 4. Write two files
-`$OUT/review.md` is for us. `$OUT/comment.md` is for the PR: the numbered questions, word for word. Nothing else.
+`$OUT/review.md` is for us. `$OUT/comment.md` is for the PR.
 
-You are the reviewer's stand-in, not a text machine. You do not file findings. You ask what the reviewer would ask.
+First, help the reviewer learn the change fast. Then ask only what must be asked.
 
-Work in this order. Write what you understand the change does. Where the code does not match that understanding, you have a mental gap. A mental gap becomes **a question to the author**, not an item in a list.
+### When to ask
+Ask only when one of these is true:
+- Behaviour changes and the PR does not say so.
+- A fallback, default, retry or swallowed error hides a failure.
+- Production can break and nobody would notice.
+- Something the change depends on is missing.
 
-**No headings. No sections. No "Gaps".** A review is a title, a short paragraph, a picture, numbered questions. Nothing else.
+Nothing else earns a question. Not design taste. Not "could be simpler". Not procedure.
+Most PRs have zero or one question. Zero is a good review, not a lazy one.
+Never search for questions to fill a list. If you have to look hard, there is nothing.
+Two questions with the same root are one question.
 
-### What you guard
-Conceptual integrity. Only that.
-- Does this fit the moving parts in the mental model, or does it bend them?
-- Is there now a second source of truth for one fact?
-- Two things that must agree but can drift apart?
-- Is the complexity paid for? A big machine for a small need is a question.
-- Slop: a fallback, a retry, a heuristic, a swallowed error, a default nobody asked for. Each one hides a why. Always ask.
-- Verbose or duplicated code that adds a name but no meaning.
-- The stated reason. When the PR, an ADR or a comment says why a choice was made, test that reason yourself. A reason that does not hold is the strongest question you can ask.
-- Same test, both ways. If the PR rejects something as "not needed yet", apply that test to the PR itself.
-
-**Never ask about procedure.** No ticket keys, no code owners, no PR scope, no commit hygiene, no schedules, no naming, no style, no "open a ticket for this". That is noise. Drop it even when it is true.
+The lenses in step 3 find many things. Almost all of them are dropped. They feed your understanding, not the question list.
 
 ### No verdict
-You never say ship, approve, or block. That is a merge decision. It belongs to the person reading your questions, not to you.
-You report one thing only: what you understand and what you still have to ask. Nothing can contradict, because there is only one thing.
-If the change solves the wrong need, that is not a verdict. That is your first question: "Why do we solve X here when the need is Y?"
-If you understand everything, write "Nothing to ask." and stop.
+You never say ship, approve, or block. That is the reader's decision.
 
 `review.md` looks exactly like this:
 
 ```
 # owner/repo#N — <title>
 
-<4-8 sentences. Max 12 words each. What the change does, in plain words.
-One sentence says where it sits in the mental model.
-No file paths, no line numbers.>
+<3-6 sentences. Max 12 words each. What the change does, in plain words.
+One sentence says where it sits in the mental model.>
 
 ![flow](flow.png)
 
-1. <A real question, ending in "?". Max 12 words.> <What made you ask. Max 12 words.>
-2. ...
-
-Not checked: <one line, only when it would change a question.>
+<Either: "Nothing to ask."
+ Or: one numbered line per question. The question, then what made you ask. Max 24 words.>
 ```
 
-`comment.md` is the numbered questions. Nothing else. No verdict line, no intro, no sign-off.
+Write `comment.md` only when there is at least one question. It holds the numbered questions and nothing else.
 
-Rules for questions:
-- It is a question. It ends with a question mark. "Why is X here?" "What happens when Y?"
-- **Two sentences.** The question, then the thing that made you ask. 24 words total.
-- Never phrase a question as an order. Not "split this method". Ask why it is one method.
-- Name the class, method or script in words. No file paths, no line numbers, no code blocks.
-- Two questions with the same root are one question. Ask the root.
-- Max 5 questions. Five is already a lot for one person to answer. Drop the weakest.
-- A number goes inside a question as words, only when it is why you are asking.
-- Something you checked and understood is not a question. It does not appear. If it changed a belief, it goes in the mental model.
-- No praise, no filler, no closing summary.
+Rules:
+- A question ends with "?". Never phrase it as an order.
+- Name things in words. No file paths, no line numbers, no code blocks.
+- No headings except the title. No praise, no filler, no summary.
 
-**Before you save either file:** read every sentence. Over 12 words: split it. Not a question: make it one or cut it. Procedural: cut it. A heading that is not the title line: delete it.
+**Before you save:** read each question again. Does it hit one of the four triggers? If not, delete it. Then read each sentence. Over 12 words: split it.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).
