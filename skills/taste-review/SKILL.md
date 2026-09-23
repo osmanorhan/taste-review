@@ -67,6 +67,8 @@ Conceptual integrity. Only that.
 - Is the complexity paid for? A big machine for a small need is a question.
 - Slop: a fallback, a retry, a heuristic, a swallowed error, a default nobody asked for. Each one hides a why. Always ask.
 - Verbose or duplicated code that adds a name but no meaning.
+- The stated reason. When the PR, an ADR or a comment says why a choice was made, test that reason yourself. A reason that does not hold is the strongest question you can ask.
+- Same test, both ways. If the PR rejects something as "not needed yet", apply that test to the PR itself.
 
 **Never ask about procedure.** No ticket keys, no code owners, no PR scope, no commit hygiene, no schedules, no naming, no style, no "open a ticket for this". That is noise. Drop it even when it is true.
 
@@ -100,6 +102,7 @@ Rules for questions:
 - **Two sentences.** The question, then the thing that made you ask. 24 words total.
 - Never phrase a question as an order. Not "split this method". Ask why it is one method.
 - Name the class, method or script in words. No file paths, no line numbers, no code blocks.
+- Two questions with the same root are one question. Ask the root.
 - Max 5 questions. Five is already a lot for one person to answer. Drop the weakest.
 - A number goes inside a question as words, only when it is why you are asking.
 - Something you checked and understood is not a question. It does not appear. If it changed a belief, it goes in the mental model.
