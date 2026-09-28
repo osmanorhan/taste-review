@@ -134,11 +134,16 @@ Rules:
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
 Follow `taste-reviewer:excalidraw-diagram` (read its SKILL.md and `references/color-palette.md`).
-One diagram: **what moved**. Components the PR touched, new edges, removed edges, external readers of any changed contract.
-- Touched components: Start/Trigger colors. New edges: Primary. Removed: Warning, dashed. Untouched neighbors that still read the contract: Inactive, dashed.
-- A component a question is about: a small Error-colored dot next to it, labeled with the question number.
+One diagram: **the flow this PR adds or changes**. It teaches the reader what the PR does. It is not about questions or gaps.
+- Pick the main run the PR adds or changes. Draw it from start to end. Start: the trigger (request, event, job, CLI). End: what comes out (response, stored row, event sent).
+- Every step in run order, left to right or top to bottom. Number the steps: 1, 2, 3.
+- Each arrow is labeled with what moves: the data, the event, or the call.
+- A branch the PR adds: a Decision diamond with its condition, then both paths.
+- New step: Primary. Changed step: Start/Trigger. Existing step, same as before: Inactive, dashed. Removed step: Warning, dashed, with "removed".
+- The PR has a second separate flow: draw it as a second lane below. Never more than two lanes.
+- Never mark questions, risks, gaps or findings. No question numbers, no error dots.
 - 6 to 15 elements with text. No more. Free-floating text over boxes.
-- **Set:** one diagram for the whole set. Group components by repo, with the repo name above each group. Edges between repos matter most. Up to 20 elements.
+- **Set:** one flow across the whole set. One lane per repo, with the repo name at the left. The run crosses the lanes in order. Up to 20 elements.
 Render:
 ```bash
 cd ${CLAUDE_PLUGIN_ROOT}/skills/excalidraw-diagram/references && uv run python render_excalidraw.py $OUT/flow.excalidraw --output $OUT/flow.png
