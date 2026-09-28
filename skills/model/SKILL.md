@@ -69,13 +69,13 @@ Print the file. If missing, say so and run bootstrap.
 ### `bootstrap owner/repo`
 Read the checkout: entrypoints, module tree, migrations/schema, CI, top-level configs. Write the file from code only. Do not read README or docs as fact; read them last, only to fill Purpose, and mark them "from docs, unverified".
 
-### `learn owner/repo#N`
+### `learn owner/repo#N [review.md path]`
 ```bash
 gh api repos/owner/repo/pulls/N/comments --paginate -q '.[] | {user:.user.login, path, line, body}'
 gh api repos/owner/repo/pulls/N/reviews  --paginate -q '.[] | {user:.user.login, state, body}'
 gh pr view N --repo owner/repo --json state,mergedAt,title
 ```
-Compare with `$TASTE_DIR/reviews/owner/repo/N/review.md`.
+Compare with the given review.md. Default: `$TASTE_DIR/reviews/owner/repo/N/review.md`. A set review covers several PRs. Skip its questions whose **PR:** line names another PR.
 - Human caught, we missed → **Review lessons** + maybe **Risks**.
 - We flagged, author or humans pushed back with a reason → **Decisions** (the reason), and a lesson if our flag was wrong.
 - PR merged → any contract or moving part it changed goes into **Contracts** / **Moving parts**.

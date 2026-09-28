@@ -27,4 +27,6 @@ Then edit `~/.taste/persona.md` — that file is who is reviewing. Two people wi
 
 One PR now: `bin/run.sh owner/repo#N`
 
+Several PRs as one change: `bin/run.sh owner/a#1 owner/b#2`. One review, one dashboard entry, under `~/.taste/reviews/_sets/`. Each question whose fix sits in one PR goes to that PR on approve. watch.sh re-runs the set when any of its PRs gets a new commit.
+
 Env: `TASTE_DIR` (default `~/.taste`), `TASTE_PORT` (7331).

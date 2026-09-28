@@ -1,11 +1,13 @@
 ---
 name: taste-review
-description: Staff-level taste review of one PR. Input "owner/repo#N". Writes review.md + flow.excalidraw + flow.png + status.json under $TASTE_DIR/reviews/owner/repo/N. Not a line-by-line review. Moving parts, complexity, slop, schema and architecture changes only.
+description: Staff-level taste review of one PR, or of a set of PRs across repos as one change. Input "owner/repo#N [owner/repo#M ...]". Writes review.md + flow.excalidraw + flow.png + status.json under $TASTE_OUT. Not a line-by-line review. Moving parts, complexity, slop, schema and architecture changes only.
 ---
 
-Input: `$ARGUMENTS` = `owner/repo#N`. `TASTE_DIR` defaults to `~/.taste`.
-Working dir is already the PR checkout (`$TASTE_DIR/repos/owner/repo`, detached at the PR head sha, base as `origin/<base>`).
-`OUT=$TASTE_DIR/reviews/owner/repo/N`. It exists and holds `status.json`.
+Input: `$ARGUMENTS` = one or more `owner/repo#N`. `TASTE_DIR` defaults to `~/.taste`.
+`OUT=$TASTE_OUT`. It exists and holds `status.json`. For one PR it is `$TASTE_DIR/reviews/owner/repo/N`.
+One PR: the working dir is already the PR checkout (`$TASTE_DIR/repos/owner/repo`, detached at the PR head sha, base as `origin/<base>`).
+
+**Set** = more than one PR. The PRs are one change across repos. You write one review for the whole change. Working dir is `$TASTE_DIR/repos`. Each PR has its checkout at `owner/repo` there, detached at its head sha. Run git with `git -C owner/repo`. Every step below runs for each PR. Lines marked **Set:** say what else changes.
 
 ## Sentence rule (applies to every word this skill writes)
 The reader has ADHD. English is their second language. A long sentence is not read, it is skipped.
@@ -29,7 +31,9 @@ Read `$TASTE_DIR/model/owner/repo.md`. If it does not exist, run `taste-reviewer
 Then read the format: `cat ${CLAUDE_PLUGIN_ROOT}/skills/model/SKILL.md`. Compare its `##` sections with the model file. If one is missing, fill it now from the code on `origin/<base>`, before you look at the PR.
 For Boundaries, the repo's own convention docs (`.claude/rules/`, `CLAUDE.md`, `CONTRIBUTING`, `docs/adr/`) are a map, not the truth. Keep a convention only when the code confirms it: count how many places follow it. Write the count next to it. Commit it on its own: `model: owner/repo — fill <section>`. The model is the reviewer's memory of the repo. Every judgment below is made against it: does this PR fit the moving parts, does it change a contract, does it contradict a decision.
 
-If this PR was reviewed before at another commit, read that review: `git -C $TASTE_DIR show HEAD:reviews/owner/repo/N/review.md` (run.sh deletes the working copy before each run, so read it from git). For each old question, check the new code. Fixed: do not ask it again. Not fixed: ask it again. Then review the rest with fresh eyes. Old questions are not a limit on what you look at.
+**Set:** read the model of every repo in the set. Each repo is judged against its own model.
+
+If this PR was reviewed before at another commit, read that review: `git -C $TASTE_DIR show HEAD:${OUT#$TASTE_DIR/}/review.md` (run.sh deletes the working copy before each run, so read it from git). For each old question, check the new code. Fixed: do not ask it again. Not fixed: ask it again. Then review the rest with fresh eyes. Old questions are not a limit on what you look at.
 
 ## 1. Persona
 Read `$TASTE_DIR/persona.md`. It defines who is reviewing: name, stance, what they never comment on.
@@ -44,13 +48,16 @@ git diff --name-only origin/<base>...HEAD
 Read the changed files whole.
 Read the PR body and the commit messages to learn what the PR says it solves and what it already explains. Verify each claim in the code. A claim the code does not back is not a fact.
 Flag early: any file under migrations/, schema/, *.sql, *.proto, openapi/*, contracts/, or a changed exported type = **schema/architecture change**. Those get the deepest read.
+**Set:** read how the PRs refer to each other. Find every contract one PR changes and another PR reads.
 
 ## 3. Map the change, then send the lenses
 Do what a human reviewer does first. List every changed file that is not a test. Group them into areas by what they do together: one feature, one flow, one adapter family, config. Use 1 area for a small PR and at most 6 for a big one. Every file belongs to exactly one area. Keep this map to yourself. It is never written into the review.
+**Set:** one area can span repos. A flow that crosses repos is one area. Up to 8 areas.
 
 Then start these agents in one message, so they run in parallel:
 - `taste-reviewer:architect`, once, on the whole change — prompt: "Review branch HEAD vs origin/<base> in this repo. PR owner/repo#N. Focus on how the areas work together. Return your normal output."
 - `taste-reviewer:reliability`, once per area — prompt: "Scope: git diff origin/<base>...HEAD -- <the area's files>. Read every one of these files in full. Return your normal output."
+- **Set:** architect prompt instead: "Review these PRs as one change. <per PR: owner/repo#N, checkout $TASTE_DIR/repos/owner/repo, HEAD vs origin/<base>>. Focus on how the repos work together. Return your normal output." Reliability scope: one `git -C owner/repo diff origin/<base>...HEAD -- <files>` line per repo in the area.
 - Metrics, with Bash, not an agent. First make a coverage report with the repo's own test task. Examples: Gradle `./gradlew test jacocoTestReport`, npm `npx jest --coverage`, Go `go test -coverprofile=coverage.out ./...`, PHP `vendor/bin/phpunit --coverage-clover clover.xml`. Use what the repo already has. If it has no coverage tool, run one just for this review without changing any file the repo tracks: Python `uv run --with pytest-cov pytest --cov=<src> --cov-report=lcov:coverage/lcov.info`, Node `npx --yes c8 --reporter=lcov npm test`. Never edit dependency files. If tests need a database or network you do not have, skip coverage and say why.
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/complexity.sh origin/<base>
@@ -58,6 +65,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/drift.sh origin/<base>
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complexity/crap.sh origin/<base> [report-path]
 ```
 If a script fails, record why in the metrics (step 7) and continue.
+**Set:** run the metrics inside each checkout. Keep the numbers per PR.
 
 ## 4. Read it as one whole, then write two files
 `$OUT/review.md` is for us. `$OUT/comment.md` is for the PR.
@@ -69,6 +77,7 @@ The lenses and metrics feed your understanding. Now read the change yourself, as
 - How the flow moved. Walk one request or run from entry to exit, across all areas. Then walk it again with one step failing, for each step. Count how often each changed call runs on that path. Watch for the same steps copied into sibling branches. Copies must change together, and one will drift.
 - Every new or changed number: a threshold, limit, timeout, retry count, size or interval. Try the edge values: zero, one, just under, equal, just over. If a library reads the number, check what the library means by it: the unit, and whether it counts retries or total attempts.
 - What the new code rebuilds. Does it hand-roll something the language, the framework or an installed dependency already does? Is a new abstraction, config value or layer used by only one caller? First check how the repo does it elsewhere. A hand-written way the code uses on purpose everywhere is a convention, not waste. One small test is never waste.
+- **Set:** where the repos meet. Walk one request across every repo in the set. For each contract one PR changes, check the other side. Is it changed the same way? If the other side is outside the set, who reads it? Which PR must deploy first? What runs while one is live and the other is not? Is the same rule written in two repos?
 Read every changed file that is not a test at least once yourself, area by area. The lenses help. They do not replace your own read.
 You do not list these. Most of what you look at is fine, and fine things never appear anywhere. You only surface what is wrong.
 
@@ -114,6 +123,13 @@ Rules:
 - No other headings. No praise, no filler, no summary.
 - Do not ask about something the PR already solves or explains. Check the code, the tests and the PR body first. Ask only when the reason given does not hold in the code.
 
+**Set:** review.md is the whole change. It is for us only.
+- Title line: `# <name of the change, max 8 words>`. The next line lists the PRs: `owner/repo#N · owner/repo#M`.
+- The summary says what each PR does and how they fit together.
+- Each question block starts with `- **PR:** owner/repo#N`. That is the PR where the fix goes. A question with no single owner gets `- **PR:** none`.
+- No `comment.md`. For each PR that owns at least one question, write `$OUT/comments/owner/repo/N.md`. It holds only that PR's question blocks, without the PR line. Numbers restart at 1. A `none` question stays in review.md only.
+- Do not ask about something a sibling PR in the set solves.
+
 **Before you save:** does each question pass the "surface only when" test? Does the PR already solve or explain it? Then delete it. Is any line more than one sentence? Cut it. Over 12 words: split it.
 
 ## 5. Diagram → `$OUT/flow.excalidraw` + `$OUT/flow.png`
@@ -122,6 +138,7 @@ One diagram: **what moved**. Components the PR touched, new edges, removed edges
 - Touched components: Start/Trigger colors. New edges: Primary. Removed: Warning, dashed. Untouched neighbors that still read the contract: Inactive, dashed.
 - A component a question is about: a small Error-colored dot next to it, labeled with the question number.
 - 6 to 15 elements with text. No more. Free-floating text over boxes.
+- **Set:** one diagram for the whole set. Group components by repo, with the repo name above each group. Edges between repos matter most. Up to 20 elements.
 Render:
 ```bash
 cd ${CLAUDE_PLUGIN_ROOT}/skills/excalidraw-diagram/references && uv run python render_excalidraw.py $OUT/flow.excalidraw --output $OUT/flow.png
@@ -129,7 +146,9 @@ cd ${CLAUDE_PLUGIN_ROOT}/skills/excalidraw-diagram/references && uv run python r
 Read the PNG once. Fix overlaps or clipped text. Render again. Stop after the second render.
 
 ## 6. Update the mental model
-Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`). Change only beliefs about the base branch that reading this PR showed were wrong or missing. The PR's own changes do not go in. They enter when it merges, through the learn step. If nothing about the base changed, do not touch the model. Do not append a log. Commit:
+Rewrite `$TASTE_DIR/model/owner/repo.md` in place (rules in `taste-reviewer:model`). Change only beliefs about the base branch that reading this PR showed were wrong or missing. The PR's own changes do not go in. They enter when it merges, through the learn step. If nothing about the base changed, do not touch the model. Do not append a log.
+**Set:** each repo has its own model. A contract between two repos goes in the Contracts of both. Commit once per repo.
+Commit:
 ```bash
 cd $TASTE_DIR && git add model && git commit -qm "model: owner/repo — PR #N <one line>"
 ```
@@ -147,5 +166,6 @@ Update `$OUT/status.json`: set `"status":"done"`, `"questions"` (count), `"ended
 }
 ```
 Empty list = measured, nothing over threshold. Missing key = not measured.
+**Set:** `metrics` has one entry per PR: `{"owner/repo#N": {<the shape above>}}`.
 If anything above made review.md impossible, set `"status":"failed"` and `"error"`.
 Print the question count, then stop.
