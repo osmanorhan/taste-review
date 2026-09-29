@@ -1,9 +1,12 @@
 ---
 name: taste-review
-description: Staff-level taste review of one PR, or of a set of PRs across repos as one change. Input "owner/repo#N [owner/repo#M ...]". Writes review.md + flow.excalidraw + flow.png + status.json under $TASTE_OUT. Not a line-by-line review. Moving parts, complexity, slop, schema and architecture changes only.
+description: Staff-level taste review of one PR, or of a set of PRs across repos as one change. Input "owner/repo#N [owner/repo#M ...]", or nothing for the PR of the current branch. Writes review.md + flow.excalidraw + flow.png + status.json under $TASTE_OUT. Not a line-by-line review. Moving parts, complexity, slop, schema and architecture changes only.
 ---
 
-Input: `$ARGUMENTS` = one or more `owner/repo#N`. `TASTE_DIR` defaults to `~/.taste`.
+Input: `$ARGUMENTS` = one or more `owner/repo#N`, or nothing. `TASTE_DIR` defaults to `~/.taste`.
+
+**Started by hand?** If `TASTE_OUT` is not set, run.sh did not start you. Do not review here. Run `bash ${CLAUDE_PLUGIN_ROOT}/bin/run.sh $ARGUMENTS` with Bash in the current folder, in the background. With no arguments it reviews the PR of the current branch. Wait for it to finish. Print its last line and the review path. Then stop.
+
 `OUT=$TASTE_OUT`. It exists and holds `status.json`. For one PR it is `$TASTE_DIR/reviews/owner/repo/N`.
 One PR: the working dir is already the PR checkout (`$TASTE_DIR/repos/owner/repo`, detached at the PR head sha, base as `origin/<base>`).
 

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# usage: run.sh owner/repo#N [owner/repo#M ...]  — several PRs = one set, one review, one dashboard entry
+# usage: run.sh [owner/repo#N ...]  — no args = PR of the current branch; several PRs = one set, one review, one dashboard entry
 set -u
+if [ $# = 0 ]; then
+  url=$(gh pr view --json url -q .url) || { echo "no PR for the current branch: pass owner/repo#N"; exit 1; }
+  set -- "$(sed -E 's#^https://github.com/([^/]+/[^/]+)/pull/([0-9]+)$#\1\#\2#' <<<"$url")"
+fi
 TASTE_DIR=${TASTE_DIR:-$HOME/.taste}
 PLUGIN=$(cd "$(dirname "$0")/.." && pwd)
 key=$(printf '%s\n' "$@" | sort | tr '/#' '_-' | paste -sd+ -)

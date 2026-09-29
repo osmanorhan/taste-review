@@ -27,7 +27,7 @@ Reviews run weekdays at 09, 12, 15 and 18. The dashboard starts at login on port
 Then edit `~/.taste/persona.md` — that file is who is reviewing. Two people with different personas get different reviews of the same PR.
 
 ## Run
-One PR now: `bin/run.sh owner/repo#N`
+One PR now: `bin/run.sh owner/repo#N`. No argument: the PR of the current branch. `/taste-reviewer:taste-review` in any Claude session does the same.
 
 ## Sets: several PRs as one change
 `bin/run.sh owner/a#1 owner/b#2`
