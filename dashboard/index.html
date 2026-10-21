@@ -33,6 +33,7 @@ function render(){const d=data[cur];
  ${d.excalidraw?`<a href="${d.excalidraw}" download>flow.excalidraw</a>`:''}${prs(d).filter(p=>p.posted_url).map(p=>` · posted: <a href="${p.posted_url}" target=_blank>${p.repo}#${p.number}</a>`).join('')}</p>
  ${d.error?`<pre style="color:#b91c1c">${d.error}</pre>`:''}
  ${Object.entries(d.comments).map(([r,c])=>`<details><summary>Goes to ${r}</summary>${marked.parse(c)}</details>`).join('')}
+ ${d.story?`<details open><summary>Türkçe anlatım</summary>${marked.parse(d.story)}</details>`:''}
  ${d.set?Object.entries(d.metrics||{}).map(([r,m])=>`<b>${r}</b>`+metrics(m)).join(''):metrics(d.metrics)}
  ${marked.parse((d.review||'_no review yet_').replace('![flow](flow.png)',d.png?`![flow](${d.png})`:''))}`;}
 function metrics(m){if(!m)return '';

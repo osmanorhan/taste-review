@@ -26,6 +26,8 @@ Good:
 The model holds how the repo is on its base branch, plus what humans decided. An open PR is never a fact in it. Its changes enter the model only after the PR merges or its questions are answered.
 There is exactly one mental model per repo. You edit that file. You never create a second file, a dated copy, a "v2", a summary, or a per-PR model. History lives in git (`$TASTE_DIR` is a git repo), not in files.
 Rewrite sections, do not append logs. A model is a current belief, not a diary. When a belief changes, replace it and put the reason in **Decisions** with the date and the PR.
+A section at its limit gets no new line. Merge or drop a line first.
+PR numbers and "since PR #N" live only in **Decisions**. Other sections say how the code is now.
 
 ## Format (keep these sections, keep them short)
 ```
@@ -34,6 +36,13 @@ _updated YYYY-MM-DD from PR #N_
 
 ## Purpose
 One paragraph. What the repo is for, who calls it, what it must never break.
+
+## Flows
+### <flow name> — <trigger: `POST /v1/x`, event `name`, cron, CLI>
+1. <what this step does> — `<Class.method>`
+2. ...
+→ <what comes out: response, stored row, event sent>
+(3–8 flows, the ones a review needs. 3–8 steps each. Walk them in the code from the entry point.)
 
 ## Moving parts
 - <part> — <what it does> — <talks to: part, part>
@@ -67,7 +76,7 @@ One paragraph. What the repo is for, who calls it, what it must never break.
 Print the file. If missing, say so and run bootstrap.
 
 ### `bootstrap owner/repo`
-Read the checkout: entrypoints, module tree, migrations/schema, CI, top-level configs. Write the file from code only. Do not read README or docs as fact; read them last, only to fill Purpose, and mark them "from docs, unverified".
+Read the checkout: entrypoints, module tree, migrations/schema, CI, top-level configs. For Flows, start at each entrypoint and follow the calls. Write the file from code only. Do not read README or docs as fact; read them last, only to fill Purpose, and mark them "from docs, unverified".
 
 ### `learn owner/repo#N [review.md path]`
 ```bash
@@ -78,7 +87,7 @@ gh pr view N --repo owner/repo --json state,mergedAt,title
 Compare with the given review.md. Default: `$TASTE_DIR/reviews/owner/repo/N/review.md`. A set review covers several PRs. Skip its questions whose **PR:** line names another PR.
 - Human caught, we missed → **Review lessons** + maybe **Risks**.
 - We flagged, author or humans pushed back with a reason → **Decisions** (the reason), and a lesson if our flag was wrong.
-- PR merged → any contract or moving part it changed goes into **Contracts** / **Moving parts**.
+- PR merged → any flow, contract or moving part it changed goes into **Flows** / **Contracts** / **Moving parts**.
 Skip bot comments and pure style threads.
 
 ### `owner/repo <free text>`

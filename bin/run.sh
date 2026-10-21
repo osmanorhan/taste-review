@@ -11,7 +11,7 @@ key=$(printf '%s\n' "$@" | sort | tr '/#' '_-' | paste -sd+ -)
 if [ $# = 1 ]; then out=$TASTE_DIR/reviews/${1%#*}/${1#*#}; wd=$TASTE_DIR/repos/${1%#*}
 else out=$TASTE_DIR/reviews/_sets/$key; wd=$TASTE_DIR/repos; fi
 mkdir -p "$out" "$TASTE_DIR/logs"
-rm -rf "$out/review.md" "$out/comment.md" "$out/comments" "$out/flow.excalidraw" "$out/flow.png"
+rm -rf "$out/review.md" "$out/story.tr.md" "$out/comment.md" "$out/comments" "$out/flow.excalidraw" "$out/flow.png"
 [ -d "$TASTE_DIR/.git" ] || git -C "$TASTE_DIR" init -q
 dup=$(printf '%s\n' "$@" | cut -d'#' -f1 | sort | uniq -d)
 [ -z "$dup" ] || { echo "two PRs from $dup in one set: one checkout per repo"; exit 1; }

@@ -15,6 +15,9 @@ One file per repo: `~/.taste/model/owner/repo.md`. Rewritten in place, never cop
 - `bin/learn.sh owner/repo#N` (watch runs it when human comments appear) merges other reviewers' comments into it
 - `/taste-reviewer:model owner/repo <text>` in any Claude session: talk about the repo or a review; the file updates when a belief changes
 
+## Story
+Each review also writes `story.tr.md`. The PR owner explains it in spoken Turkish: the problem, the aim, how, what stays the same. The dashboard shows it above the review.
+
 ## Install
 ```bash
 git clone git@github.com:osmanorhan/taste-review.git ~/work/taste-reviewer && ~/work/taste-reviewer/install.sh
@@ -33,7 +36,7 @@ One PR now: `bin/run.sh owner/repo#N`. No argument: the PR of the current branch
 `bin/run.sh owner/a#1 owner/b#2`
 - One review, one dashboard entry. `review.md` holds the whole change. It is only for you.
 - The review looks at where the repos meet: contracts changed on one side only, deploy order, the same rule in two repos.
-- Each question has a **PR:** line: the PR where the fix goes. On approve, each PR gets only its own questions. `PR: none` questions stay in the review.
+- Each question has a **PR:** line: the PR that owns the question. On approve, each PR gets only its own questions. `PR: none` questions stay in the review.
 - watch.sh does not review a set member alone. It re-runs the whole set when any member gets a new commit.
 - Each repo keeps its own model. Learning still runs per PR.
 - Limit: one PR per repo in a set.

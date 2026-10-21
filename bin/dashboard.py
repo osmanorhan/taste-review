@@ -21,6 +21,8 @@ def reviews():
         d = json.loads(s.read_text())
         r = s.parent / "review.md"
         d["review"] = r.read_text() if r.exists() else ""
+        t = s.parent / "story.tr.md"
+        d["story"] = t.read_text() if t.exists() else ""
         d["comments"] = {f"{pr['repo']}#{pr['number']}": c.read_text() for pr, c in targets(s.parent, d) if c.exists()}
         base = f"/files/{s.parent.relative_to(TASTE / 'reviews')}"
         d["png"] = f"{base}/flow.png" if (s.parent / "flow.png").exists() else ""
