@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-import json, os, subprocess
+import json, mimetypes, os, subprocess
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 TASTE = Path(os.environ.get("TASTE_DIR", Path.home() / ".taste"))
 HERE = Path(__file__).resolve().parent
 PORT = int(os.environ.get("TASTE_PORT", 7331))
+SPEAKING = {}
+mimetypes.add_type("audio/mp4", ".m4a")
 
 
 def targets(d, st):
@@ -26,9 +28,18 @@ def reviews():
         d["comments"] = {f"{pr['repo']}#{pr['number']}": c.read_text() for pr, c in targets(s.parent, d) if c.exists()}
         base = f"/files/{s.parent.relative_to(TASTE / 'reviews')}"
         d["png"] = f"{base}/flow.png" if (s.parent / "flow.png").exists() else ""
+        d["audio"] = f"{base}/story.m4a" if (s.parent / "story.m4a").exists() else ""
+        v = s.parent / "story.voice"
+        d["voice"] = v.read_text().strip() if v.exists() else ""
+        d["speaking"] = speaking(s.parent)
         d["excalidraw"] = f"{base}/flow.excalidraw" if (s.parent / "flow.excalidraw").exists() else ""
         out.append(d)
     return out
+
+
+def speaking(d):
+    p = SPEAKING.get(d)
+    return bool(p and p.poll() is None)
 
 
 def review_dir(body):
@@ -53,7 +64,7 @@ class H(SimpleHTTPRequestHandler):
         if self.path.startswith("/files/"):
             p = (TASTE / "reviews" / self.path[7:]).resolve()
             if p.is_file() and TASTE.resolve() in p.parents:
-                return self.send_file(p, "image/png" if p.suffix == ".png" else "application/octet-stream")
+                return self.send_file(p, mimetypes.guess_type(p)[0] or "application/octet-stream")
         self.send_error(404)
 
     def do_POST(self):
@@ -76,6 +87,12 @@ class H(SimpleHTTPRequestHandler):
             st["status"] = "posted"
             save(d, st)
             return self.send_json({"ok": True, "url": " ".join(urls)})
+        if self.path == "/api/speak":
+            if not (d / "story.tr.md").exists():
+                return self.send_json({"ok": False, "err": "no story"}, 404)
+            if not speaking(d):
+                SPEAKING[d] = subprocess.Popen([str(HERE / "speak.sh"), str(d)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return self.send_json({"ok": True})
         if self.path == "/api/rerun":
             refs = list(st["prs"]) if "set" in st else [f"{st['repo']}#{st['number']}"]
             st["status"] = "queued"

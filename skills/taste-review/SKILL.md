@@ -156,12 +156,20 @@ Rules:
 **Before you save:** does each question pass the "surface only when" test? Is it a local bug? Does the PR already solve or explain it? Then delete it. Is any line more than one sentence? Cut it. Over 12 words: split it.
 
 ## 5. Story → `$OUT/story.tr.md`
-The PR owner explains the PR to a teammate, in spoken Turkish. First person: "Bu PR'ı şu yüzden açtık."
-It answers, in this order: what problem we had, what we aim for, how we solved it, what we chose not to change.
+The PR owner explains the PR to a teammate, out loud, in Turkish. First person: "Bu PR'ı şu yüzden açtık." The listener hears it once, with no screen. Write it the way a Turkish engineer talks in a meeting.
+- Turkish sentences. Never translate a term. Keep in English, as the repo writes them:
+  - domain terms and taxonomy: content set, journey, channel step
+  - enum and status values: live, draft
+  - class, service and field names: Architect, journey usage
+  - everyday software words: PR, endpoint, request, response, row, field, flag, adapter, controller, cache, timeout
+- Turkish suffixes go after an apostrophe: "content set'in", "journey'ler", "row'a".
+- Bad: "bir setin hangi yolculukta olduğu", "kanal adımı", "canlı". Good: "bir content set'in hangi journey'lerde olduğu", "channel step", "live".
+- Order: what problem we had, what we aim for, how it works now, what we chose not to change.
+- One idea per paragraph, 2 to 4 sentences, a blank line between paragraphs. Sentences under 15 words.
+- Walk through one concrete example: what comes in, what happens, what comes out. Use real values from the code or the ticket.
+- Say what a thing does before its name. A name only when it helps. No file paths, code, or symbols. Split code names into words: `journeyUsage` → "journey usage".
 - Sources: ticket, PR body, commits, the model's Flows, and the code you read. Say only what they back. The reason is written nowhere? Say so: "Neden yapıldığı hiçbir yerde yazmıyor."
-- Not a reading of review.md. No questions, no risks, no metrics.
-- Talk, do not list. No headings, no bullets, no markdown. Short sentences. Everyday Turkish.
-- Say what a class does, not its name. A name only when the listener must find it.
+- Not a reading of review.md. No questions, no risks, no metrics. No headings, bullets, or markdown.
 - 250 to 400 words.
 **Set:** one story for the whole change. Say which repo does what.
 
