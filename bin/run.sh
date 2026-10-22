@@ -40,7 +40,8 @@ for ref; do
 done
 
 cd "$wd" && TASTE_DIR=$TASTE_DIR TASTE_OUT=$out claude -p "/taste-reviewer:taste-review $*" \
-  --plugin-dir "$PLUGIN" --settings '{"enabledPlugins":{"taste-reviewer@taste-reviewer":false}}' --permission-mode bypassPermissions \
+  --plugin-dir "$PLUGIN" --settings '{"enabledPlugins":{"taste-reviewer@taste-reviewer":false}}' --permission-mode acceptEdits --add-dir "$TASTE_DIR" \
+  --allowedTools Bash Read Edit Write Glob Grep Agent Task Skill mcp__plugin_engineering-knowledge-base_ekb mcp__plugin_zoe_zoe \
   --output-format stream-json --verbose > "$TASTE_DIR/logs/$key-${sha:0:7}.jsonl" 2>&1
 rc=$?
 
