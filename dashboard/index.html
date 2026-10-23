@@ -21,10 +21,10 @@ table.m td:first-child{color:#94a3b8;white-space:nowrap}
 <script>
 let data=[],cur=null;
 const prs=d=>d.set?Object.values(d.prs):[d],key=d=>d.set?{set:d.set}:{repo:d.repo,number:d.number};
-async function load(){data=await (await fetch('/api/list')).json();
+async function load(){const old=JSON.stringify(data[cur]);data=await (await fetch('/api/list')).json();
  list.innerHTML=data.map((d,i)=>`<div class="${cur==i?'on':''}" onclick="show(${i})"><span class="s ${d.status}">${d.status}</span><b>${prs(d).map(p=>p.repo+'#'+p.number).join(' + ')}</b><br>${d.title||''}<br><span class="v">${d.questions!=null?(d.questions?d.questions+' questions':'nothing to ask'):''} · ${[...new Set(prs(d).map(p=>p.author))].join(', ')}</span></div>`).join('');
- if(cur!==null)render();}
-function show(i){cur=i;load();}
+ if(cur!==null&&JSON.stringify(data[cur])!==old)render();}
+function show(i){cur=i;render();load();}
 async function model(repo){const m=await (await fetch('/api/model/'+repo)).json();cur=null;load();
  main.innerHTML=`<h2>${repo} — mental model</h2><p class=v>${m.history.length} changes: ${m.history.slice(0,5).join(' · ')}</p>${marked.parse(m.model||'_no model yet. First review bootstraps it._')}`;}
 function render(){const d=data[cur];
@@ -33,6 +33,7 @@ function render(){const d=data[cur];
  ${d.excalidraw?`<a href="${d.excalidraw}" download>flow.excalidraw</a>`:''}${prs(d).filter(p=>p.posted_url).map(p=>` · posted: <a href="${p.posted_url}" target=_blank>${p.repo}#${p.number}</a>`).join('')}</p>
  ${d.error?`<pre style="color:#b91c1c">${d.error}</pre>`:''}
  ${Object.entries(d.comments).map(([r,c])=>`<details><summary>Goes to ${r}</summary>${marked.parse(c)}</details>`).join('')}
+ ${d.story?`<details open><summary>Türkçe anlatım</summary><p>${d.audio?`<audio controls src="${d.audio}"></audio> `:d.speaking?'<i>Ses hazırlanıyor, birkaç dakika sürer…</i> ':'<button onclick="speak()">▶ Dinle</button> '}<span class=v>${d.voice}</span></p>${marked.parse(d.story)}</details>`:''}
  ${d.set?Object.entries(d.metrics||{}).map(([r,m])=>`<b>${r}</b>`+metrics(m)).join(''):metrics(d.metrics)}
  ${marked.parse((d.review||'_no review yet_').replace('![flow](flow.png)',d.png?`![flow](${d.png})`:''))}`;}
 function metrics(m){if(!m)return '';
@@ -43,6 +44,7 @@ function metrics(m){if(!m)return '';
  if((m.complexity||[]).length)rows.push(['complexity',m.complexity.map(x=>`${x.fn} · CCN ${x.ccn}${x.cog!=null?' · COG '+x.cog:''}`).join('<br>')]);
  return rows.length?`<table class=m>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`:'';}
 async function post(){const d=data[cur];const r=await (await fetch('/api/approve',{method:'POST',body:JSON.stringify(key(d))})).json();alert(r.ok?'posted '+r.url:r.err);load();}
+async function speak(){const d=data[cur];const r=await fetch('/api/speak',{method:'POST',body:JSON.stringify(key(d))});if(!r.ok)alert((await r.json()).err);load();}
 async function rerun(){const d=data[cur];await fetch('/api/rerun',{method:'POST',body:JSON.stringify(key(d))});load();}
 load();setInterval(load,15000);
 </script>

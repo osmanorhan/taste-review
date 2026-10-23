@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
-# usage: run.sh owner/repo#N [owner/repo#M ...]  — several PRs = one set, one review, one dashboard entry
+# usage: run.sh [owner/repo#N ...]  — no args = PR of the current branch; several PRs = one set, one review, one dashboard entry
 set -u
+if [ $# = 0 ]; then
+  url=$(gh pr view --json url -q .url) || { echo "no PR for the current branch: pass owner/repo#N"; exit 1; }
+  set -- "$(sed -E 's#^https://github.com/([^/]+/[^/]+)/pull/([0-9]+)$#\1\#\2#' <<<"$url")"
+fi
 TASTE_DIR=${TASTE_DIR:-$HOME/.taste}
 PLUGIN=$(cd "$(dirname "$0")/.." && pwd)
 key=$(printf '%s\n' "$@" | sort | tr '/#' '_-' | paste -sd+ -)
 if [ $# = 1 ]; then out=$TASTE_DIR/reviews/${1%#*}/${1#*#}; wd=$TASTE_DIR/repos/${1%#*}
 else out=$TASTE_DIR/reviews/_sets/$key; wd=$TASTE_DIR/repos; fi
 mkdir -p "$out" "$TASTE_DIR/logs"
-rm -rf "$out/review.md" "$out/comment.md" "$out/comments" "$out/flow.excalidraw" "$out/flow.png"
+rm -rf "$out/review.md" "$out/story.tr.md" "$out/story.m4a" "$out/story.voice" "$out/.speak.log" "$out/comment.md" "$out/comments" "$out/flow.excalidraw" "$out/flow.png"
 [ -d "$TASTE_DIR/.git" ] || git -C "$TASTE_DIR" init -q
 dup=$(printf '%s\n' "$@" | cut -d'#' -f1 | sort | uniq -d)
 [ -z "$dup" ] || { echo "two PRs from $dup in one set: one checkout per repo"; exit 1; }
@@ -36,7 +40,8 @@ for ref; do
 done
 
 cd "$wd" && TASTE_DIR=$TASTE_DIR TASTE_OUT=$out claude -p "/taste-reviewer:taste-review $*" \
-  --plugin-dir "$PLUGIN" --settings '{"enabledPlugins":{"taste-reviewer@taste-reviewer":false}}' --permission-mode bypassPermissions \
+  --plugin-dir "$PLUGIN" --settings '{"enabledPlugins":{"taste-reviewer@taste-reviewer":false}}' --permission-mode acceptEdits --add-dir "$TASTE_DIR" \
+  --allowedTools Bash Read Edit Write Glob Grep Agent Task Skill mcp__plugin_engineering-knowledge-base_ekb mcp__plugin_zoe_zoe \
   --output-format stream-json --verbose > "$TASTE_DIR/logs/$key-${sha:0:7}.jsonl" 2>&1
 rc=$?
 

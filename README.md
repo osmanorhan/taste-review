@@ -15,6 +15,10 @@ One file per repo: `~/.taste/model/owner/repo.md`. Rewritten in place, never cop
 - `bin/learn.sh owner/repo#N` (watch runs it when human comments appear) merges other reviewers' comments into it
 - `/taste-reviewer:model owner/repo <text>` in any Claude session: talk about the repo or a review; the file updates when a belief changes
 
+## Story
+Each review also writes `story.tr.md`. The PR owner explains it out loud in Turkish: the problem, the aim, how, what stays the same. Repo and software terms stay in English: "content set'in", "journey'ler", "response". The dashboard shows it above the review.
+**▶ Dinle** turns it into speech with `bin/speak.sh`: local VoxCPM2 (Apache-2.0) on the Mac GPU, about 1 min for a 1 min story, about 12 GB. The first press downloads the model, about 5 GB. The voice is designed once and kept in `~/.taste/voices/owner.wav`; delete it to get a new voice. If VoxCPM2 fails, macOS Yelda speaks and the dashboard says so.
+
 ## Install
 ```bash
 git clone git@github.com:osmanorhan/taste-review.git ~/work/taste-reviewer && ~/work/taste-reviewer/install.sh
@@ -27,13 +31,13 @@ Reviews run weekdays at 09, 12, 15 and 18. The dashboard starts at login on port
 Then edit `~/.taste/persona.md` — that file is who is reviewing. Two people with different personas get different reviews of the same PR.
 
 ## Run
-One PR now: `bin/run.sh owner/repo#N`
+One PR now: `bin/run.sh owner/repo#N`. No argument: the PR of the current branch. `/taste-reviewer:taste-review` in any Claude session does the same.
 
 ## Sets: several PRs as one change
 `bin/run.sh owner/a#1 owner/b#2`
 - One review, one dashboard entry. `review.md` holds the whole change. It is only for you.
 - The review looks at where the repos meet: contracts changed on one side only, deploy order, the same rule in two repos.
-- Each question has a **PR:** line: the PR where the fix goes. On approve, each PR gets only its own questions. `PR: none` questions stay in the review.
+- Each question has a **PR:** line: the PR that owns the question. On approve, each PR gets only its own questions. `PR: none` questions stay in the review.
 - watch.sh does not review a set member alone. It re-runs the whole set when any member gets a new commit.
 - Each repo keeps its own model. Learning still runs per PR.
 - Limit: one PR per repo in a set.

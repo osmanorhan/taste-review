@@ -16,7 +16,9 @@ echo "1/4 diagram renderer"
 echo "2/4 state dir $TASTE_DIR"
 mkdir -p "$TASTE_DIR"/{reviews,repos,logs,model}
 [ -d "$TASTE_DIR/.git" ] || git -C "$TASTE_DIR" init -q
-[ -f "$TASTE_DIR/.gitignore" ] || printf 'repos/\nlogs/\nlock/\n' > "$TASTE_DIR/.gitignore"
+for l in repos/ logs/ lock/ voices/ story.m4a story.voice .speak.log '.story.*'; do
+  grep -qxF "$l" "$TASTE_DIR/.gitignore" 2>/dev/null || echo "$l" >> "$TASTE_DIR/.gitignore"
+done
 [ -f "$TASTE_DIR/persona.md" ] || cp "$P/persona.example.md" "$TASTE_DIR/persona.md"
 
 echo "3/4 background jobs"
